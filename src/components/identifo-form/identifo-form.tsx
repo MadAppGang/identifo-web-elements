@@ -1,4 +1,4 @@
-import { ApiError, IdentifoAuth } from '@identifo/identifo-auth-js';
+import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
 import { Component, h, Prop, State } from '@stencil/core';
 
 type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot';
@@ -20,8 +20,15 @@ export class MyComponent {
 
   @State() username: string;
   @State() password: string;
+  @State() phone: string;
+  @State() email: string;
   @State() registrationForbidden: boolean;
   @State() lastError: ApiError;
+  @State() code: string;
+  @State() tfaType: TFAType;
+  @State() tfaMandatory: boolean;
+  @State() provisioningURI: string;
+  @State() token: string;
 
   // /**
   //  * The last name
@@ -31,8 +38,37 @@ export class MyComponent {
   // private getText(): string {
   //   return format(this.first, this.middle, this.last);
   // }
+  processError(e: ApiError) {
+    this.lastError = e;
+  }
+  async signIn() {
+    const login = await this.auth.api.login(this.username, this.password, '', ['']).catch(e => this.processError(e));
+    if (login) {
+      this.tfaMandatory = login.require_2fa;
+      if (login.require_2fa) {
+        if (!login.enabled_2fa) {
+          this.token = login.access_token;
+          this.openRoute('tfa/setup');
+          return;
+        }
+        if (login.enabled_2fa) {
+          this.token = login.access_token;
+          this.openRoute('tfa/verify');
+          return;
+        }
+      }
+    }
+  }
+  verifyTFA() {}
+  setupTFA() {}
   openRoute(route: Routes) {
     this.route = route;
+  }
+  usernameChange(event: InputEvent) {
+    this.username = (event.target as HTMLInputElement).value;
+  }
+  passwordChange(event: InputEvent) {
+    this.password = (event.target as HTMLInputElement).value;
   }
   renderRoute(route: Routes) {
     switch (route) {
@@ -40,11 +76,11 @@ export class MyComponent {
         return (
           <div>
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingInput" value={this.username} placeholder="username" />
+              <input type="text" class="form-control" id="floatingInput" value={this.username} placeholder="username" onInput={this.usernameChange} />
               <label htmlFor="floatingInput">Username</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" />
+              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" onInput={this.passwordChange} />
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
@@ -53,7 +89,9 @@ export class MyComponent {
                 {this.lastError?.detailedMessage}
               </div>
             )}
-            <button class="w-100 btn btn-lg btn-primary my-3">Sign in</button>
+            <button onClick={() => this.signIn()} class="w-100 btn btn-lg btn-primary my-3">
+              Sign in
+            </button>
             <div class="d-flex flex-column">
               <a>Forgot password</a>
               {!this.registrationForbidden && <a onClick={() => this.openRoute('register')}>Register new account</a>}
@@ -89,9 +127,77 @@ export class MyComponent {
           </div>
         );
       case 'tfa/setup':
-        return 'tfa/setup';
+        return (
+          <div>
+            {!!(this.tfaType === TFAType.TFATypeApp) && (
+              <div>
+                Use GoogleAuth as 2fa
+                {!!this.provisioningURI && (
+                  <div>
+                    <img src="{`data:image/png;base64, ${this.qrBase64}`}" alt="{this.provisioningURI}" />
+                    <div>{this.provisioningURI}</div>
+                    <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.verifyTFA()}>
+                      Next
+                    </button>
+                  </div>
+                )}
+                {!this.provisioningURI && (
+                  <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.setupTFA()}>
+                    Setup
+                  </button>
+                )}
+              </div>
+            )}
+            {!!(this.tfaType === TFAType.TFATypeSMS) && (
+              <div>
+                Use phone as 2fa, please check your phone bellow, we will send confirmation code to this phone
+                <div class="form-floating">
+                  <input type="email" class="form-control" id="floatingInput" value={this.phone} placeholder="+1 234 567 89 00" />
+                  <label htmlFor="floatingInput">Phone number</label>
+                </div>
+                <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.setupTFA()}>
+                  Setup email
+                </button>
+              </div>
+            )}
+            {!!(this.tfaType === TFAType.TFATypeEmail) && (
+              <div>
+                Use email as 2fa, please check your email bellow, we will send confirmation code to this email
+                <div class="form-floating">
+                  <input type="email" class="form-control" id="floatingInput" value={this.email} placeholder="user@domain.com" />
+                  <label htmlFor="floatingInput">Email</label>
+                </div>
+                <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.setupTFA()}>
+                  Setup phone
+                </button>
+              </div>
+            )}
+            {!!this.tfaMandatory && <button>Skip</button>}
+          </div>
+        );
       case 'tfa/verify':
-        return 'tfa/verify';
+        return (
+          <div>
+            <div>
+              {!!(this.tfaType === TFAType.TFATypeApp) && `Please use google authenticator app and enter code`}
+              {!!(this.tfaType === TFAType.TFATypeSMS) && `Please check your phone number ${this.phone} for the code`}
+              {!!(this.tfaType === TFAType.TFATypeEmail) && `Check your email ${this.email}`}
+            </div>
+            Please enter code
+            <br />
+            <div class="form-floating">
+              <input type="text" class="form-control" id="floatingUsername" value={this.code} placeholder="XXXX" />
+              <label htmlFor="floatingInput">Verify code</label>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.verifyTFA()}>
+              Ok
+            </button>
+            <div class="d-flex flex-column">
+              <a onClick={() => this.openRoute('login')}>Go back</a>
+              <a href="">I am not reciving code</a>
+            </div>
+          </div>
+        );
       case 'password/forgot':
         return 'password/forgot';
       case 'password/reset':
@@ -104,6 +210,7 @@ export class MyComponent {
     this.auth = new IdentifoAuth({ appId: this.appId, url: this.url });
     const settings = await this.auth.api.getAppSettings();
     this.registrationForbidden = settings.registrationForbidden;
+    this.tfaType = settings.tfaType;
   }
 
   render() {
