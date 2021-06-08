@@ -29,6 +29,7 @@ export class MyComponent {
   @State() tfaMandatory: boolean;
   @State() provisioningURI: string;
   @State() token: string;
+  @State() success: boolean;
 
   // /**
   //  * The last name
@@ -199,9 +200,55 @@ export class MyComponent {
           </div>
         );
       case 'password/forgot':
-        return 'password/forgot';
+        return (
+          <div>
+            <div class="form-floating">
+              <input type="username" class="form-control" id="floatingUsername" value={this.username} placeholder="username" />
+              <label htmlFor="floatingUsername">Username</label>
+            </div>
+
+            {!!this.lastError || (
+              <div class="alert alert-danger" role="alert">
+                {this.lastError?.detailedMessage}
+              </div>
+            )}
+
+            {!this.success || <button class="w-100 btn btn-lg btn-primary my-3">Restore password</button>}
+            {this.success || (
+              <div class="alert alert-success my-3" role="alert">
+                Reset password link sended to email
+              </div>
+            )}
+            <div class="d-flex flex-column">
+              <a onClick={() => this.openRoute('login')}>Back to login</a>
+            </div>
+          </div>
+        );
       case 'password/reset':
-        return 'password/reset';
+        return (
+          <div>
+            <div class="form-floating">
+              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" />
+              <label htmlFor="floatingPassword">Password</label>
+            </div>
+
+            {!!this.lastError || (
+              <div class="alert alert-danger" role="alert">
+                {this.lastError?.detailedMessage}
+              </div>
+            )}
+
+            {!this.success || <button class="w-100 btn btn-lg btn-primary my-3">Ok</button>}
+            {this.success || (
+              <div class="alert alert-success my-3" role="alert">
+                New password has been set. Return to <a onClick={() => this.openRoute('login')}>login</a>
+              </div>
+            )}
+            <div class="d-flex flex-column">
+              <a onClick={() => this.openRoute('login')}>Back to login</a>
+            </div>
+          </div>
+        );
     }
   }
 
