@@ -60,8 +60,12 @@ export class MyComponent {
       }
     }
   }
+  async signUp() {}
+  skipTFA() {}
   verifyTFA() {}
   setupTFA() {}
+  restorePassword() {}
+  setNewPassword() {}
   openRoute(route: Routes) {
     this.route = route;
   }
@@ -81,7 +85,7 @@ export class MyComponent {
               <label htmlFor="floatingInput">Username</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" onInput={this.passwordChange} />
+              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="password" onInput={this.passwordChange} />
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
@@ -106,11 +110,11 @@ export class MyComponent {
         return (
           <div>
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingUsername" value={this.username} placeholder="username" />
+              <input type="text" class="form-control" id="floatingUsername" value={this.username} placeholder="username" onInput={this.usernameChange} />
               <label htmlFor="floatingUsername">Username</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" />
+              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="password" onInput={this.passwordChange} />
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
@@ -120,7 +124,9 @@ export class MyComponent {
               </div>
             )}
 
-            <button class="w-100 btn btn-lg btn-primary my-3">Sign up</button>
+            <button onClick={() => this.signUp()} class="w-100 btn btn-lg btn-primary my-3">
+              Sign up
+            </button>
             <div class="d-flex flex-column">
               <a href="user-agreement">By clicking register I accept user agreement</a>
               <a onClick={() => this.openRoute('login')}>Go back to login</a>
@@ -173,7 +179,7 @@ export class MyComponent {
                 </button>
               </div>
             )}
-            {!!this.tfaMandatory && <button>Skip</button>}
+            {!!this.tfaMandatory && <button onClick={() => this.skipTFA()}>Skip</button>}
           </div>
         );
       case 'tfa/verify':
@@ -213,7 +219,11 @@ export class MyComponent {
               </div>
             )}
 
-            {!this.success || <button class="w-100 btn btn-lg btn-primary my-3">Restore password</button>}
+            {!this.success || (
+              <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.restorePassword()}>
+                Restore password
+              </button>
+            )}
             {this.success || (
               <div class="alert alert-success my-3" role="alert">
                 Reset password link sended to email
@@ -238,7 +248,11 @@ export class MyComponent {
               </div>
             )}
 
-            {!this.success || <button class="w-100 btn btn-lg btn-primary my-3">Ok</button>}
+            {!this.success || (
+              <button onClick={() => this.setNewPassword()} class="w-100 btn btn-lg btn-primary my-3">
+                Ok
+              </button>
+            )}
             {this.success || (
               <div class="alert alert-success my-3" role="alert">
                 New password has been set. Return to <a onClick={() => this.openRoute('login')}>login</a>
