@@ -1,7 +1,8 @@
-import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
+import { ApiError, IdentifoAuth, SuccessResponse, TFAType } from '@identifo/identifo-auth-js';
 import { Component, h, Prop, State } from '@stencil/core';
+import { afterLoginRedirect, loginCatchRedirect } from '../../utils/redirects';
 
-type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot';
+type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback';
 
 @Component({
   tag: 'identifo-form',
@@ -24,10 +25,11 @@ export class MyComponent {
   @State() email: string;
   @State() registrationForbidden: boolean;
   @State() lastError: ApiError;
-  @State() code: string;
+  @State() tfaCode: string;
   @State() tfaType: TFAType;
   @State() tfaMandatory: boolean;
   @State() provisioningURI: string;
+  @State() provisioningQR: string;
   @State() token: string;
   @State() success: boolean;
 
@@ -43,28 +45,57 @@ export class MyComponent {
     this.lastError = e;
   }
   async signIn() {
-    const login = await this.auth.api.login(this.username, this.password, '', ['']).catch(e => this.processError(e));
-    if (login) {
-      this.tfaMandatory = login.require_2fa;
-      if (login.require_2fa) {
-        if (!login.enabled_2fa) {
-          this.token = login.access_token;
-          this.openRoute('tfa/setup');
-          return;
-        }
-        if (login.enabled_2fa) {
-          this.token = login.access_token;
-          this.openRoute('tfa/verify');
-          return;
-        }
-      }
-    }
+    await this.auth.api
+      .login(this.username, this.password, '', [''])
+      .then(afterLoginRedirect)
+      .catch(loginCatchRedirect)
+      .then(route => this.openRoute(route))
+      .catch(e => this.processError(e));
   }
-  async signUp() {}
-  skipTFA() {}
-  verifyTFA() {}
-  setupTFA() {}
-  restorePassword() {}
+  async signUp() {
+    await this.auth.api
+      .register(this.username, this.password, '', '')
+      .then(afterLoginRedirect)
+      .catch(loginCatchRedirect)
+      .then(route => this.openRoute(route))
+      .catch(e => this.processError(e));
+  }
+  finishLogin() {}
+  async verifyTFA() {
+    this.auth.api.verifyTFA(this.tfaCode, []).then(e => {
+      this.finishLogin();
+    });
+  }
+  async setupTFA() {
+    if (this.tfaType == TFAType.TFATypeSMS) {
+      await this.auth.api.updateUser({ new_phone: this.phone });
+    }
+
+    if (this.tfaType == TFAType.TFATypeEmail) {
+      await this.auth.api.updateUser({ new_email: this.email });
+    }
+
+    await this.auth.api.enableTFA().then(r => {
+      if (!r.provisioning_uri) {
+        this.openRoute('tfa/verify');
+      }
+      if (r.provisioning_uri) {
+        this.provisioningURI = r.provisioning_uri;
+        this.provisioningQR = r.provisioning_qr;
+      }
+    });
+  }
+  restorePassword() {
+    this.auth.api
+      .requestResetPassword(this.username)
+      .then((e: SuccessResponse) => {
+        this.success = true;
+      })
+      .catch((data: ApiError) => {
+        console.log(data);
+        this.lastError = data;
+      });
+  }
   setNewPassword() {}
   openRoute(route: Routes) {
     this.route = route;
@@ -75,17 +106,33 @@ export class MyComponent {
   passwordChange(event: InputEvent) {
     this.password = (event.target as HTMLInputElement).value;
   }
+  emailChange(event: InputEvent) {
+    this.email = (event.target as HTMLInputElement).value;
+  }
+  phoneChange(event: InputEvent) {
+    this.phone = (event.target as HTMLInputElement).value;
+  }
+  tfaCodeChange(event: InputEvent) {
+    this.tfaCode = (event.target as HTMLInputElement).value;
+  }
   renderRoute(route: Routes) {
     switch (route) {
       case 'login':
         return (
           <div>
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingInput" value={this.username} placeholder="username" onInput={this.usernameChange} />
+              <input type="text" class="form-control" id="floatingInput" value={this.username} placeholder="username" onInput={event => this.usernameChange(event as InputEvent)} />
               <label htmlFor="floatingInput">Username</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="password" onInput={this.passwordChange} />
+              <input
+                type="password"
+                class="form-control"
+                id="floatingPassword"
+                value={this.password}
+                placeholder="password"
+                onInput={event => this.passwordChange(event as InputEvent)}
+              />
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
@@ -98,7 +145,7 @@ export class MyComponent {
               Sign in
             </button>
             <div class="d-flex flex-column">
-              <a>Forgot password</a>
+              <a onClick={() => this.openRoute('password/forgot')}>Forgot password</a>
               {!this.registrationForbidden && <a onClick={() => this.openRoute('register')}>Register new account</a>}
 
               <a href="user-agreement">User agreement</a>
@@ -110,15 +157,29 @@ export class MyComponent {
         return (
           <div>
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingUsername" value={this.username} placeholder="username" onInput={this.usernameChange} />
+              <input
+                type="text"
+                class="form-control"
+                id="floatingUsername"
+                value={this.username}
+                placeholder="username"
+                onInput={event => this.usernameChange(event as InputEvent)}
+              />
               <label htmlFor="floatingUsername">Username</label>
             </div>
             <div class="form-floating">
-              <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="password" onInput={this.passwordChange} />
+              <input
+                type="password"
+                class="form-control"
+                id="floatingPassword"
+                value={this.password}
+                placeholder="password"
+                onInput={event => this.passwordChange(event as InputEvent)}
+              />
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
-            {!!this.lastError || (
+            {!!this.lastError && (
               <div class="alert alert-danger" role="alert">
                 {this.lastError?.detailedMessage}
               </div>
@@ -141,9 +202,9 @@ export class MyComponent {
                 Use GoogleAuth as 2fa
                 {!!this.provisioningURI && (
                   <div>
-                    <img src="{`data:image/png;base64, ${this.qrBase64}`}" alt="{this.provisioningURI}" />
+                    <img src={`data:image/png;base64, ${this.provisioningQR}`} alt="{this.provisioningURI}" />
                     <div>{this.provisioningURI}</div>
-                    <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.verifyTFA()}>
+                    <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.openRoute('tfa/verify')}>
                       Next
                     </button>
                   </div>
@@ -159,7 +220,14 @@ export class MyComponent {
               <div>
                 Use phone as 2fa, please check your phone bellow, we will send confirmation code to this phone
                 <div class="form-floating">
-                  <input type="email" class="form-control" id="floatingInput" value={this.phone} placeholder="+1 234 567 89 00" />
+                  <input
+                    type="phone"
+                    class="form-control"
+                    id="floatingInput"
+                    value={this.phone}
+                    placeholder="+1 234 567 89 00"
+                    onInput={event => this.phoneChange(event as InputEvent)}
+                  />
                   <label htmlFor="floatingInput">Phone number</label>
                 </div>
                 <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.setupTFA()}>
@@ -171,7 +239,14 @@ export class MyComponent {
               <div>
                 Use email as 2fa, please check your email bellow, we will send confirmation code to this email
                 <div class="form-floating">
-                  <input type="email" class="form-control" id="floatingInput" value={this.email} placeholder="user@domain.com" />
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="floatingInput"
+                    value={this.email}
+                    placeholder="user@domain.com"
+                    onInput={event => this.emailChange(event as InputEvent)}
+                  />
                   <label htmlFor="floatingInput">Email</label>
                 </div>
                 <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.setupTFA()}>
@@ -179,7 +254,7 @@ export class MyComponent {
                 </button>
               </div>
             )}
-            {!!this.tfaMandatory && <button onClick={() => this.skipTFA()}>Skip</button>}
+            {!!this.tfaMandatory && <button onClick={() => this.finishLogin()}>Skip</button>}
           </div>
         );
       case 'tfa/verify':
@@ -193,8 +268,8 @@ export class MyComponent {
             Please enter code
             <br />
             <div class="form-floating">
-              <input type="text" class="form-control" id="floatingUsername" value={this.code} placeholder="XXXX" />
-              <label htmlFor="floatingInput">Verify code</label>
+              <input type="text" class="form-control" id="floatingCode" value={this.tfaCode} placeholder="XXXX" onInput={event => this.tfaCodeChange(event as InputEvent)} />
+              <label htmlFor="floatingCode">Verify code</label>
             </div>
             <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.verifyTFA()}>
               Ok
@@ -213,18 +288,18 @@ export class MyComponent {
               <label htmlFor="floatingUsername">Username</label>
             </div>
 
-            {!!this.lastError || (
+            {!!this.lastError && (
               <div class="alert alert-danger" role="alert">
                 {this.lastError?.detailedMessage}
               </div>
             )}
 
-            {!this.success || (
+            {!this.success && (
               <button class="w-100 btn btn-lg btn-primary my-3" onClick={() => this.restorePassword()}>
                 Restore password
               </button>
             )}
-            {this.success || (
+            {this.success && (
               <div class="alert alert-success my-3" role="alert">
                 Reset password link sended to email
               </div>
@@ -242,18 +317,18 @@ export class MyComponent {
               <label htmlFor="floatingPassword">Password</label>
             </div>
 
-            {!!this.lastError || (
+            {!!this.lastError && (
               <div class="alert alert-danger" role="alert">
                 {this.lastError?.detailedMessage}
               </div>
             )}
 
-            {!this.success || (
+            {!this.success && (
               <button onClick={() => this.setNewPassword()} class="w-100 btn btn-lg btn-primary my-3">
                 Ok
               </button>
             )}
-            {this.success || (
+            {this.success && (
               <div class="alert alert-success my-3" role="alert">
                 New password has been set. Return to <a onClick={() => this.openRoute('login')}>login</a>
               </div>
