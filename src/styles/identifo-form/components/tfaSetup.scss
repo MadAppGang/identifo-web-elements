@@ -1,0 +1,39 @@
+.tfa-setup {
+  padding: 48px 24px 80px;
+  width: 100%;
+  max-width: 416px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &__text {
+    font-size: 24px;
+    line-height: 32px;
+    color: var(--text);
+    text-align: center;
+    max-width: 260px;
+    width: 100%;
+    margin-bottom: 48px;
+  }
+
+  .info-card {
+    margin-bottom: 32px;
+  }
+
+  .info-card:last-of-type {
+    margin-bottom: 48px;
+  }
+
+  @include for-phone-only {
+    padding: 38px 24px 36px;
+
+    .info-card {
+      margin-bottom: 24px;
+    }
+
+    .info-card:last-of-type {
+      margin-bottom: 32px;
+    }
+  }
+}
