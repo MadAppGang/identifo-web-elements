@@ -1,0 +1,53 @@
+.social-buttons {
+  width: 100%;
+  border-top: 1px solid var(--gray-line);
+  position: relative;
+  padding-top: 48px;
+
+  &__text {
+    font-size: 14px;
+    line-height: 21px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    color: #828282;
+    transform: translate(-50%, -55%);
+    padding: 4px 8px;
+    background-color: var(--main-background);
+  }
+
+  &__social-medias {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__media {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--social-button);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  &__media:not(:last-of-type) {
+    margin-right: 24px;
+  }
+
+  @include for-phone-only {
+    padding-top: 36px;
+
+    &__media {
+      width: 44px;
+      height: 44px;
+    }
+
+    &__image {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

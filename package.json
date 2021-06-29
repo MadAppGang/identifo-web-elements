@@ -26,6 +26,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@stencil/sass": "^1.4.1",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.9.0"
   }
