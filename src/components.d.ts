@@ -5,9 +5,11 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { ApiError } from "@identifo/identifo-auth-js";
 export namespace Components {
     interface IdentifoForm {
         "appId": string;
+        "theme": 'dark' | 'light';
         "url": string;
     }
 }
@@ -25,6 +27,9 @@ declare global {
 declare namespace LocalJSX {
     interface IdentifoForm {
         "appId"?: string;
+        "onLoginComplete"?: (event: CustomEvent<string>) => void;
+        "onOnError"?: (event: CustomEvent<ApiError>) => void;
+        "theme"?: 'dark' | 'light';
         "url"?: string;
     }
     interface IntrinsicElements {

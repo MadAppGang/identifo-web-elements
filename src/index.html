@@ -8,12 +8,31 @@
     <script type="module" src="/build/identifo-webcomp.esm.js"></script>
     <script nomodule src="/build/identifo-webcomp.js"></script>
     <style>
+      @font-face {
+        font-family: Circe;
+        src: url('https://madappgang.com/static/Circe-Regular-60d20f049399d1e46a1339b15a8198aa.woff2');
+      }
+      @font-face {
+        font-family: Circe;
+        font-weight: bold;
+        src: url('https://madappgang.com/static/Circe-Bold-d1db4470c6dd8e178558e034b6bd53f2.woff2');
+      }
       body {
         margin: 0;
+        font-family: Circe, Arial, sans-serif;
+      }
+      .login-holder {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 100vh;
+        justify-content: center;
       }
     </style>
   </head>
   <body>
-    <identifo-form app-id="c39f1600ibkdshghcf30" url="http://localhost:8081"></identifo-form>
+    <div class="login-holder">
+      <identifo-form app-id="c303hc0em84u9gebrp00" url="http://localhost:8081/" theme="dark"></identifo-form>
+    </div>
   </body>
 </html>

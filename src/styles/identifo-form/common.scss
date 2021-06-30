@@ -2,16 +2,15 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
-.wrapper {
-  min-width: 100vw;
-  min-height: 100vh;
-
+.wrapper,
+.wrapper-dark {
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
 
-  background-color: var(--main-background);
+  // background-color: var(--main-background);
 }

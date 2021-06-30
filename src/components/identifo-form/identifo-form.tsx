@@ -1,8 +1,8 @@
-import { ApiError, IdentifoAuth, SuccessResponse, TFAType } from '@identifo/identifo-auth-js';
-import { Component, h, Prop, State } from '@stencil/core';
+import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
+import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
 import { afterLoginRedirect, loginCatchRedirect } from '../../utils/redirects';
 
-type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login';
+type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error';
 
 @Component({
   tag: 'identifo-form',
@@ -18,6 +18,7 @@ export class MyComponent {
 
   @Prop() appId: string;
   @Prop() url: string;
+  @Prop() theme: 'dark' | 'light';
 
   @State() username: string;
   @State() password: string;
@@ -33,6 +34,9 @@ export class MyComponent {
   @State() token: string;
   @State() success: boolean;
 
+  @Event() loginComplete: EventEmitter<string>;
+  @Event() onError: EventEmitter<ApiError>;
+
   // /**
   //  * The last name
   //  */
@@ -43,6 +47,7 @@ export class MyComponent {
   // }
   processError(e: ApiError) {
     this.lastError = e;
+    this.onError.emit(e);
   }
   async signIn() {
     await this.auth.api
@@ -60,9 +65,12 @@ export class MyComponent {
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
   }
-  finishLogin() { }
+  async finishLogin() {
+    const token = this.auth.getToken().token;
+    this.loginComplete.emit(token);
+  }
   async verifyTFA() {
-    this.auth.api.verifyTFA(this.tfaCode, []).then(e => {
+    this.auth.api.verifyTFA(this.tfaCode, []).then(() => {
       this.finishLogin();
     });
   }
@@ -88,15 +96,19 @@ export class MyComponent {
   restorePassword() {
     this.auth.api
       .requestResetPassword(this.username)
-      .then((e: SuccessResponse) => {
+      .then(() => {
         this.success = true;
       })
-      .catch((data: ApiError) => {
-        console.log(data);
-        this.lastError = data;
-      });
+      .catch(e => this.processError(e));
   }
-  setNewPassword() { }
+  setNewPassword() {
+    this.auth.api
+      .resetPassword(this.password)
+      .then(() => {
+        this.success = true;
+      })
+      .catch(e => this.processError(e));
+  }
   openRoute(route: Routes) {
     this.route = route;
   }
@@ -121,16 +133,13 @@ export class MyComponent {
         return (
           <div class="login-form">
             <p class="login-form__register-text">
-              Don't have an account?<a onClick={() => this.openRoute('register')} class="login-form__register-link"> Sign Up</a>
+              Don't have an account?
+              <a onClick={() => this.openRoute('register')} class="login-form__register-link">
+                {' '}
+                Sign Up
+              </a>
             </p>
-            <input
-              type="text"
-              class="form-control"
-              id="floatingInput"
-              value={this.email}
-              placeholder="Email"
-              onInput={event => this.emailChange(event as InputEvent)}
-            />
+            <input type="text" class="form-control" id="floatingInput" value={this.email} placeholder="Email" onInput={event => this.emailChange(event as InputEvent)} />
             <input
               type="password"
               class="form-control"
@@ -147,67 +156,43 @@ export class MyComponent {
             )}
 
             <div class="login-form__buttons">
-              <button
-                onClick={() => this.signIn()}
-                class="primary-button"
-                disabled={!this.email || !this.password}
-              >
+              <button onClick={() => this.signIn()} class="primary-button" disabled={!this.email || !this.password}>
                 Login
               </button>
-              <a onClick={() => this.openRoute('password/forgot')} class="login-form__forgot-pass">Forgot password</a>
+              <a onClick={() => this.openRoute('password/forgot')} class="login-form__forgot-pass">
+                Forgot password
+              </a>
             </div>
             <div class="social-buttons">
               <p class="social-buttons__text">or continue with</p>
               <div class="social-buttons__social-medias">
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/apple.svg' class="social-buttons__image" alt="login via apple" />
+                  <img src="../../assets/images/apple.svg" class="social-buttons__image" alt="login via apple" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/google.svg' class="social-buttons__image" alt="login via google" />
+                  <img src="../../assets/images/google.svg" class="social-buttons__image" alt="login via google" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/fb.svg' class="social-buttons__image" alt="login via facebook" />
+                  <img src="../../assets/images/fb.svg" class="social-buttons__image" alt="login via facebook" />
                 </div>
               </div>
             </div>
-          </div >
+          </div>
         );
       case 'register':
         return (
           <div class="register-form">
             <div class="upload-photo">
-              <input
-                type="file"
-                name="photo"
-                id="photo"
-                accept="image/*"
-                class="upload-photo__field"
-              />
+              <input type="file" name="photo" id="photo" accept="image/*" class="upload-photo__field" />
               <label htmlFor="photo" class="upload-photo__label">
                 <div class="upload-photo__avatar" id="avatar" />
               </label>
               <label htmlFor="photo" class="upload-photo__label">
-                <p class="upload-photo__text">
-                  Upload avatar
-                </p>
+                <p class="upload-photo__text">Upload avatar</p>
               </label>
             </div>
-            <input
-              type="text"
-              class="form-control"
-              id="floatingInput"
-              value={this.email}
-              placeholder="Email"
-              onInput={event => this.emailChange(event as InputEvent)}
-            />
-            <input
-              type="phone"
-              class="form-control"
-              id="floatingInput"
-              value={this.phone}
-              placeholder="Phone number"
-              onInput={event => this.phoneChange(event as InputEvent)}
-            />
+            <input type="text" class="form-control" id="floatingInput" value={this.email} placeholder="Email" onInput={event => this.emailChange(event as InputEvent)} />
+            <input type="phone" class="form-control" id="floatingInput" value={this.phone} placeholder="Phone number" onInput={event => this.phoneChange(event as InputEvent)} />
             <input
               type="text"
               class="form-control"
@@ -232,14 +217,12 @@ export class MyComponent {
             )}
 
             <div class="register-form__buttons">
-              <button
-                onClick={() => this.signUp()}
-                class="primary-button"
-                disabled={!this.email || !this.password || !this.phone || !this.username}
-              >
+              <button onClick={() => this.signUp()} class="primary-button" disabled={!this.email || !this.password || !this.phone || !this.username}>
                 Continue
               </button>
-              <a onClick={() => this.openRoute('login')} class="register-form__log-in">Go back to login</a>
+              <a onClick={() => this.openRoute('login')} class="register-form__log-in">
+                Go back to login
+              </a>
             </div>
           </div>
         );
@@ -247,34 +230,27 @@ export class MyComponent {
         return (
           <div class="otp-login">
             <p class="otp-login__register-text">
-              Don't have an account?<a onClick={() => this.openRoute('register')} class="login-form__register-link"> Sign Up</a>
+              Don't have an account?
+              <a onClick={() => this.openRoute('register')} class="login-form__register-link">
+                {' '}
+                Sign Up
+              </a>
             </p>
-            <input
-              type="phone"
-              class="form-control"
-              id="floatingInput"
-              value={this.phone}
-              placeholder="Phone number"
-              onInput={event => this.phoneChange(event as InputEvent)}
-            />
-            <button
-              onClick={() => this.openRoute('tfa/verify')}
-              class="primary-button"
-              disabled={!this.phone}
-            >
+            <input type="phone" class="form-control" id="floatingInput" value={this.phone} placeholder="Phone number" onInput={event => this.phoneChange(event as InputEvent)} />
+            <button onClick={() => this.openRoute('tfa/verify')} class="primary-button" disabled={!this.phone}>
               Continue
             </button>
             <div class="social-buttons">
               <p class="social-buttons__text">or continue with</p>
               <div class="social-buttons__social-medias">
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/apple.svg' class="social-buttons__image" alt="login via apple" />
+                  <img src="../../assets/images/apple.svg" class="social-buttons__image" alt="login via apple" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/google.svg' class="social-buttons__image" alt="login via google" />
+                  <img src="../../assets/images/google.svg" class="social-buttons__image" alt="login via google" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src='../../assets/images/fb.svg' class="social-buttons__image" alt="login via facebook" />
+                  <img src="../../assets/images/fb.svg" class="social-buttons__image" alt="login via facebook" />
                 </div>
               </div>
             </div>
@@ -287,33 +263,35 @@ export class MyComponent {
             <div class="info-card">
               <div class="info-card__controls">
                 <p class="info-card__title">Authenticator app</p>
-                <button type="button" class="info-card__button">Setup</button>
+                <button type="button" class="info-card__button">
+                  Setup
+                </button>
               </div>
-              <p class="info-card__text">
-                Use the Authenticator app to get free verification codes, even when your phone is offline. Available for Android and iPhone.
-              </p>
+              <p class="info-card__text">Use the Authenticator app to get free verification codes, even when your phone is offline. Available for Android and iPhone.</p>
             </div>
             <div class="info-card">
               <div class="info-card__controls">
                 <p class="info-card__title">Email</p>
-                <button type="button" class="info-card__button">Update</button>
+                <button type="button" class="info-card__button">
+                  Update
+                </button>
               </div>
-              {!!(this.email) && <p class="info-card__subtitle">roman@identifo.com</p>}
-              <p class="info-card__text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
+              {!!this.email && <p class="info-card__subtitle">roman@identifo.com</p>}
+              <p class="info-card__text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
             </div>
             <div class="info-card">
               <div class="info-card__controls">
                 <p class="info-card__title">Phone number</p>
-                <button type="button" class="info-card__button">Update</button>
+                <button type="button" class="info-card__button">
+                  Update
+                </button>
               </div>
-              {!!(this.phone) && <p class="info-card__subtitle">+7 903 123 45 67</p>}
-              <p class="info-card__text">
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat
-              </p>
+              {!!this.phone && <p class="info-card__subtitle">+7 903 123 45 67</p>}
+              <p class="info-card__text">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat</p>
             </div>
-            <button class="primary-button" type="button">Done</button>
+            <button class="primary-button" type="button">
+              Done
+            </button>
             {/* {!!(this.tfaType === TFAType.TFATypeApp) && (
               <div>
                 Use GoogleAuth as 2fa
@@ -380,7 +358,9 @@ export class MyComponent {
             {!!(this.tfaType === TFAType.TFATypeApp) && (
               <div class="tfa-verify__title-wrapper">
                 <h2 class="tfa-verify__title">Please scan QR-code with the app</h2>
-                <button type="button" class="tfa-verify__app-button">Regenerate</button>
+                <button type="button" class="tfa-verify__app-button">
+                  Regenerate
+                </button>
               </div>
             )}
             {!!(this.tfaType === TFAType.TFATypeSMS) && (
@@ -395,18 +375,13 @@ export class MyComponent {
                 <p class="tfa-verify__subtitle">The email has been sent to mail@identifo.com</p>
               </div>
             )}
-            <input
-              type="text"
-              class="form-control"
-              id="floatingCode"
-              value={this.tfaCode}
-              placeholder="Verify code"
-              onInput={event => this.tfaCodeChange(event as InputEvent)}
-            />
-            <button type="button" class="primary-button" disabled={!this.tfaCode}>Confirm</button>
+            <input type="text" class="form-control" id="floatingCode" value={this.tfaCode} placeholder="Verify code" onInput={event => this.tfaCodeChange(event as InputEvent)} />
+            <button type="button" class="primary-button" disabled={!this.tfaCode}>
+              Confirm
+            </button>
             <a class="tfa-verify__back">Back to settings</a>
           </div>
-        )
+        );
       case 'password/forgot':
         return (
           <div class="forgot-password">
@@ -417,23 +392,24 @@ export class MyComponent {
             {!!this.lastError && (
               <div class="alert alert-danger" role="alert">
                 {this.lastError?.detailedMessage}
-              </div >)}
+              </div>
+            )}
             {!this.success && (
               <button class="w-100 btn btn-lg btn- primary my-3" onClick={() => this.restorePassword()}>
                 Restore password
-              </button>)}
-
+              </button>
+            )}
 
             {this.success && (
-              < div class="alert alert-success my-3" role="alert">
+              <div class="alert alert-success my-3" role="alert">
                 Reset password link sended to email
-              </div >
+              </div>
             )}
 
             <div class="d-flex flex-column">
               <a onClick={() => this.openRoute('login')}>Back to login</a>
-            </div >
-          </div >
+            </div>
+          </div>
         );
       case 'password/reset':
         return (
@@ -441,27 +417,38 @@ export class MyComponent {
             <div class="form-floating">
               <input type="password" class="form-control" id="floatingPassword" value={this.password} placeholder="Password" />
               <label htmlFor="floatingPassword">Password</label>
-            </div >
+            </div>
 
             {!!this.lastError && (
-              <div class="alert alert-danger" role="alert">{this.lastError?.detailedMessage}</div >)}
+              <div class="alert alert-danger" role="alert">
+                {this.lastError?.detailedMessage}
+              </div>
+            )}
 
             {!this.success && (
               <button onClick={() => this.setNewPassword()} class="w-100 btn btn-lg btn-primary my-3">
                 Ok
-              </button >
+              </button>
             )}
 
             {this.success && (
               <div class="alert alert-success my-3" role="alert">
                 New password has been set.Return to <a onClick={() => this.openRoute('login')}> login</a>
-              </div >
+              </div>
             )}
 
             <div class="d-flex flex-column">
               <a onClick={() => this.openRoute('login')}>Back to login</a>
-            </div >
-          </div >
+            </div>
+          </div>
+        );
+      case 'error':
+        return (
+          <div>
+            <div>{this.lastError.id}</div>
+            <div>{this.lastError.message}</div>
+            <div>{this.lastError.detailedMessage}</div>
+          </div>
         );
     }
   }
@@ -469,16 +456,18 @@ export class MyComponent {
   async componentWillLoad() {
     console.log(this.appId, this.url);
     this.auth = new IdentifoAuth({ appId: this.appId, url: this.url });
-    const settings = await this.auth.api.getAppSettings();
-    this.registrationForbidden = settings.registrationForbidden;
-    this.tfaType = settings.tfaType;
+
+    try {
+      const settings = await this.auth.api.getAppSettings();
+      this.registrationForbidden = settings.registrationForbidden;
+      this.tfaType = settings.tfaType;
+    } catch (err) {
+      this.route = 'error';
+      this.lastError = err as ApiError;
+    }
   }
 
   render() {
-    return (
-      <div class="wrapper " >
-        {this.renderRoute(this.route)}
-      </div >
-    );
+    return <div class={{ 'wrapper': this.theme === 'light', 'wrapper-dark': this.theme === 'dark' }}>{this.renderRoute(this.route)}</div>;
   }
 }
