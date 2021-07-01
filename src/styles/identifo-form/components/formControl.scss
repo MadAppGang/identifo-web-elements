@@ -17,6 +17,10 @@
     line-height: 26px;
     color: #828282;
   }
+
+  &-danger {
+    border: 1px solid #F66161;
+  }
 }
 
 @include for-phone-only {

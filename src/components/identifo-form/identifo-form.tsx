@@ -110,6 +110,7 @@ export class MyComponent {
       .catch(e => this.processError(e));
   }
   openRoute(route: Routes) {
+    this.lastError = undefined;
     this.route = route;
   }
   usernameChange(event: InputEvent) {
@@ -139,7 +140,15 @@ export class MyComponent {
                 Sign Up
               </a>
             </p>
-            <input type="text" class="form-control" id="floatingInput" value={this.email} placeholder="Email" onInput={event => this.emailChange(event as InputEvent)} />
+            <input
+              type="text"
+              class="form-control"
+              id="floatingInput"
+              value={this.email}
+              placeholder="Email"
+              onInput={event => this.emailChange(event as InputEvent)}
+              onKeyPress={(e) => !!(e.key === "Enter" && this.email && this.password) && this.signIn()}
+            />
             <input
               type="password"
               class="form-control"
@@ -147,19 +156,24 @@ export class MyComponent {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
+              onKeyPress={(e) => !!(e.key === "Enter" && this.email && this.password) && this.signIn()}
             />
 
             {!!this.lastError && (
-              <div class="alert alert-danger" role="alert">
+              <div class="error" role="alert">
                 {this.lastError?.detailedMessage}
               </div>
             )}
 
-            <div class="login-form__buttons">
-              <button onClick={() => this.signIn()} class="primary-button" disabled={!this.email || !this.password}>
+            <div class={`login-form__buttons ${!!this.lastError ? "login-form__buttons_mt-32" : ""}`}>
+              <button
+                onClick={() => this.signIn()}
+                class="primary-button"
+                disabled={!this.email || !this.password}
+              >
                 Login
               </button>
-              <a onClick={() => this.openRoute('password/forgot')} class="login-form__forgot-pass">
+              <a onClick={() => this.openRoute("password/forgot")} class="login-form__forgot-pass">
                 Forgot password
               </a>
             </div>
@@ -211,12 +225,12 @@ export class MyComponent {
             />
 
             {!!this.lastError && (
-              <div class="alert alert-danger" role="alert">
+              <div class="error" role="alert">
                 {this.lastError?.detailedMessage}
               </div>
             )}
 
-            <div class="register-form__buttons">
+            <div class={`register-form__buttons ${!!this.lastError ? "register-form__buttons_mt-32" : ""}`}>
               <button onClick={() => this.signUp()} class="primary-button" disabled={!this.email || !this.password || !this.phone || !this.username}>
                 Continue
               </button>
@@ -444,10 +458,10 @@ export class MyComponent {
         );
       case 'error':
         return (
-          <div>
-            <div>{this.lastError.id}</div>
-            <div>{this.lastError.message}</div>
-            <div>{this.lastError.detailedMessage}</div>
+          <div class="error-view">
+            <div class="error-view__message">{this.lastError.message}</div>
+            <div class="error-view__details">{this.lastError.detailedMessage}</div>
+            <button type="button" class="primary-button">Go back home</button>
           </div>
         );
     }
