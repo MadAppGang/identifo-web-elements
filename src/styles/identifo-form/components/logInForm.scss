@@ -4,9 +4,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 24px;
-
   width: 100%;
-  max-width: 416px;
 
   &__register-text {
     margin-bottom: 32px;
@@ -25,15 +23,16 @@
     margin-bottom: 32px;
   }
 
-  .form-control:nth-of-type(2) {
-    margin-bottom: 48px;
-  }
-
   &__buttons {
+    margin-top: 48px;
     display: flex;
     width: 100%;
     align-items: center;
     margin-bottom: 36px;
+  }
+
+  &__buttons_mt-32 {
+    margin-top: 32px;
   }
 
   &__forgot-pass {
@@ -47,6 +46,10 @@
     margin-right: 32px;
   }
 
+  .error {
+    margin-top: 12px;
+  }
+
   @include for-phone-only {
     &__register-text {
       font-size: 16px;
@@ -56,11 +59,8 @@
       margin-bottom: 24px;
     }
 
-    .form-control:nth-of-type(2) {
-      margin-bottom: 32px;
-    }
-
     &__buttons {
+      margin-top: 32px;
       flex-direction: column;
     }
 

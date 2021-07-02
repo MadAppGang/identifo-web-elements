@@ -3,18 +3,19 @@
   max-width: 416px;
   padding: 64px 24px 44px;
 
-  .form-control {
+  .form-control:not(:last-of-type) {
     margin-bottom: 32px;
-  }
-
-  .form-control:last-of-type {
-    margin-bottom: 48px;
   }
 
   &__buttons {
     display: flex;
     width: 100%;
     align-items: center;
+    margin-top: 48px;
+  }
+
+  &__buttons_mt-32 {
+    margin-top: 32px;
   }
 
   &__log-in {
@@ -28,15 +29,15 @@
     margin-right: 32px;
   }
 
+  .error {
+    margin-top: 12px;
+  }
+
   @include for-phone-only {
     padding: 48px 24px 32px;
 
     .form-control {
       margin-bottom: 24px;
-    }
-
-    .form-control:last-of-type {
-      margin-bottom: 32px;
     }
 
     .primary-button {
@@ -46,6 +47,7 @@
 
     &__buttons {
       flex-direction: column;
+      margin-top: 32px;
     }
   }
 }
