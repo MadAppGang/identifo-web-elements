@@ -12,7 +12,15 @@
   color: #fff;
   font-size: 18px;
   line-height: 26px;
-  transition: opacity 0.3s;
+  transition: all .4s;
+
+  &:active {
+    transform: translateY(-4px);
+  }
+
+  &:hover {
+    opacity: .8;
+  }
 
   &:disabled {
     cursor: initial;

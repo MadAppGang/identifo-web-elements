@@ -1,7 +1,6 @@
 .tfa-setup {
-  padding: 48px 24px 80px;
-  width: 100%;
-  max-width: 416px;
+  padding: 48px 0 80px;
+  width: 416px;
 
   display: flex;
   flex-direction: column;
@@ -26,6 +25,8 @@
   }
 
   @include for-phone-only {
+    width: 100%;
+    max-width: 416px;
     padding: 38px 24px 36px;
 
     .info-card {

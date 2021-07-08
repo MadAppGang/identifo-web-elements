@@ -3,8 +3,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 24px;
-  width: 100%;
+  width: 416px;
 
   &__register-text {
     margin-bottom: 32px;
@@ -51,6 +50,10 @@
   }
 
   @include for-phone-only {
+    width: 100%;
+    max-width: 416px;
+    padding: 0 24px;
+    
     &__register-text {
       font-size: 16px;
     }

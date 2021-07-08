@@ -1,7 +1,6 @@
 .register-form {
-  width: 100%;
-  max-width: 416px;
-  padding: 64px 24px 44px;
+  width: 416px;
+  padding: 64px 0 44px;
 
   .form-control:not(:last-of-type) {
     margin-bottom: 32px;
@@ -34,6 +33,8 @@
   }
 
   @include for-phone-only {
+    width: 100%;
+    max-width: 416px;
     padding: 48px 24px 32px;
 
     .form-control {
