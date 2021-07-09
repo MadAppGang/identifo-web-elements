@@ -7,7 +7,7 @@
     line-height: 21px;
     color: #828282;
     padding: 4px 8px;
-    margin-bottom: 36px;
+    margin-bottom: 39px;
     text-align: center;
     position: static;
 
@@ -60,6 +60,8 @@
     }
 
     &__text {
+      margin-bottom: 36px;
+      
       &::before {
         width: 26%;
       }

@@ -13,28 +13,41 @@
     text-align: center;
     max-width: 260px;
     width: 100%;
-    margin-bottom: 48px;
+  }
+
+  .error {
+    margin-top: 12px;
+  }
+
+  &__form {
+    width: 100%;
+
+    .primary-button {
+      margin: 48px auto 0;
+    }
+
+    .primary-button-mt-32 {
+      margin-top: 32px;
+    }
+  }
+
+  &__subtitle {
+    text-align: center;
+    font-size: 16px;
+    line-height: 24px;
+    color: #828282;
+    max-width: 270px;
+    text-align: center;
+    margin: 16px auto 48px;
   }
 
   .info-card {
-    margin-bottom: 32px;
-  }
-
-  .info-card:last-of-type {
-    margin-bottom: 48px;
+    margin-top: 48px;
   }
 
   @include for-phone-only {
     width: 100%;
     max-width: 416px;
     padding: 38px 24px 36px;
-
-    .info-card {
-      margin-bottom: 24px;
-    }
-
-    .info-card:last-of-type {
-      margin-bottom: 32px;
-    }
   }
 }
