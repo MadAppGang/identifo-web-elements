@@ -109,7 +109,7 @@ export class MyComponent {
   }
   restorePassword() {
     this.auth.api
-      .requestResetPassword(this.username)
+      .requestResetPassword(this.email)
       .then(() => {
         this.success = true;
       })
@@ -407,19 +407,19 @@ export class MyComponent {
         return (
           <div class="forgot-password">
             <h2 class="forgot-password__title">
-              Enter the username you gave when you registered
+              Enter the email you gave when you registered
             </h2>
             <p class="forgot-password__subtitle">
               We will send you a link to create a new password on email
             </p>
             <input
-              type="username"
+              type="email"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
-              id="floatingUsername"
-              value={this.username}
+              id="floatingEmail"
+              value={this.email}
               placeholder="Username"
-              onInput={event => this.usernameChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.username) && this.restorePassword()}
+              onInput={event => this.emailChange(event as InputEvent)}
+              onKeyPress={(e) => !!(e.key === "Enter" && this.email) && this.restorePassword()}
             />
 
             {!!this.lastError && (
@@ -431,7 +431,7 @@ export class MyComponent {
             <button
               type="button"
               class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-              disabled={!this.username}
+              disabled={!this.email}
               onClick={() => this.restorePassword()}
             >
               Send the link
