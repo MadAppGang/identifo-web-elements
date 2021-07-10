@@ -35,7 +35,7 @@ export class MyComponent {
   @State() success: boolean;
 
   @Event() loginComplete: EventEmitter<string>;
-  @Event() onError: EventEmitter<ApiError>;
+  @Event() error: EventEmitter<ApiError>;
 
   // /**
   //  * The last name
@@ -47,15 +47,15 @@ export class MyComponent {
   // }
   processError(e: ApiError) {
     this.lastError = e;
-    this.onError.emit(e);
+    this.error.emit(e);
   }
   async signIn() {
     await this.auth.api
       .login(this.username, this.password, '', [''])
-      .then((e) => {
-        this.phone = e.user.phone || ''
-        this.email = e.user.email || ''
-        return afterLoginRedirect(e)
+      .then(e => {
+        this.phone = e.user.phone || '';
+        this.email = e.user.email || '';
+        return afterLoginRedirect(e);
       })
       .catch(loginCatchRedirect)
       .then(route => this.openRoute(route))
@@ -64,7 +64,7 @@ export class MyComponent {
   async signUp() {
     await this.auth.api
       .register(this.username, this.password)
-      .then((e) => afterLoginRedirect(e))
+      .then(e => afterLoginRedirect(e))
       .catch(loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
@@ -74,17 +74,17 @@ export class MyComponent {
     this.loginComplete.emit(token);
   }
   async verifyTFA() {
-    if (this.lastError) console.log(JSON.stringify(this.lastError.message))
-    this.auth.api.verifyTFA(this.tfaCode, [])
+    this.auth.api
+      .verifyTFA(this.tfaCode, [])
       .then(() => this.finishLogin().then(() => this.openRoute('callback')))
-      .catch(e => this.processError(e))
+      .catch(e => this.processError(e));
   }
   async setupTFA() {
     if (this.tfaType == TFAType.TFATypeSMS) {
       try {
-        await this.auth.api.updateUser({ new_phone: this.phone })
+        await this.auth.api.updateUser({ new_phone: this.phone });
       } catch (e) {
-        this.processError(e)
+        this.processError(e);
       }
     }
 
@@ -92,7 +92,7 @@ export class MyComponent {
       try {
         await this.auth.api.updateUser({ new_email: this.email });
       } catch (e) {
-        this.processError(e)
+        this.processError(e);
       }
     }
 
@@ -105,7 +105,7 @@ export class MyComponent {
         this.provisioningQR = r.provisioning_qr;
         this.openRoute('tfa/verify');
       }
-    })
+    });
   }
   restorePassword() {
     this.auth.api
@@ -124,7 +124,7 @@ export class MyComponent {
       .catch(e => this.processError(e));
   }
   openRoute(route: Routes) {
-    this.lastError = undefined
+    this.lastError = undefined;
     this.route = route;
   }
   usernameChange(event: InputEvent) {
@@ -161,7 +161,7 @@ export class MyComponent {
               value={this.username}
               placeholder="Username"
               onInput={event => this.usernameChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.username && this.password) && this.signIn()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.username && this.password) && this.signIn()}
             />
             <input
               type="password"
@@ -170,7 +170,7 @@ export class MyComponent {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.username && this.password) && this.signIn()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.username && this.password) && this.signIn()}
             />
 
             {!!this.lastError && (
@@ -179,15 +179,11 @@ export class MyComponent {
               </div>
             )}
 
-            <div class={`login-form__buttons ${!!this.lastError ? "login-form__buttons_mt-32" : ""}`}>
-              <button
-                onClick={() => this.signIn()}
-                class="primary-button"
-                disabled={!this.username || !this.password}
-              >
+            <div class={`login-form__buttons ${!!this.lastError ? 'login-form__buttons_mt-32' : ''}`}>
+              <button onClick={() => this.signIn()} class="primary-button" disabled={!this.username || !this.password}>
                 Login
               </button>
-              <a onClick={() => this.openRoute("password/forgot")} class="login-form__forgot-pass">
+              <a onClick={() => this.openRoute('password/forgot')} class="login-form__forgot-pass">
                 Forgot password
               </a>
             </div>
@@ -217,7 +213,7 @@ export class MyComponent {
               value={this.username}
               placeholder="Username"
               onInput={event => this.usernameChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.password && this.username) && this.signUp()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.username) && this.signUp()}
             />
             <input
               type="password"
@@ -226,7 +222,7 @@ export class MyComponent {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.password && this.username) && this.signUp()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.username) && this.signUp()}
             />
 
             {!!this.lastError && (
@@ -235,7 +231,7 @@ export class MyComponent {
               </div>
             )}
 
-            <div class={`register-form__buttons ${!!this.lastError ? "register-form__buttons_mt-32" : ""}`}>
+            <div class={`register-form__buttons ${!!this.lastError ? 'register-form__buttons_mt-32' : ''}`}>
               <button onClick={() => this.signUp()} class="primary-button" disabled={!this.username || !this.password}>
                 Continue
               </button>
@@ -283,7 +279,7 @@ export class MyComponent {
               <div class="info-card">
                 <div class="info-card__controls">
                   <p class="info-card__title">Authenticator app</p>
-                  <button type="button" class="info-card__button" onClick={() => this.setupTFA()} >
+                  <button type="button" class="info-card__button" onClick={() => this.setupTFA()}>
                     Setup
                   </button>
                 </div>
@@ -300,7 +296,7 @@ export class MyComponent {
                   value={this.email}
                   placeholder="Email"
                   onInput={event => this.emailChange(event as InputEvent)}
-                  onKeyPress={(e) => !!(e.key === "Enter" && this.email) && this.setupTFA()}
+                  onKeyPress={e => !!(e.key === 'Enter' && this.email) && this.setupTFA()}
                 />
 
                 {!!this.lastError && (
@@ -309,11 +305,7 @@ export class MyComponent {
                   </div>
                 )}
 
-                <button
-                  onClick={() => this.setupTFA()}
-                  class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-                  disabled={!this.email}
-                >
+                <button onClick={() => this.setupTFA()} class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.email}>
                   Setup email
                 </button>
               </div>
@@ -322,13 +314,13 @@ export class MyComponent {
               <div class="tfa-setup__form">
                 <p class="tfa-setup__subtitle"> Use phone as 2fa, please check your phone bellow, we will send confirmation code to this phone</p>
                 <input
-                  type="number"
+                  type="phone"
                   class={`form-control ${this.lastError && 'form-control-danger'}`}
                   id="floatingInput"
                   value={this.phone}
                   placeholder="Phone"
                   onInput={event => this.phoneChange(event as InputEvent)}
-                  onKeyPress={(e) => !!(e.key === "Enter" && this.phone) && this.setupTFA()}
+                  onKeyPress={e => !!(e.key === 'Enter' && this.phone) && this.setupTFA()}
                 />
 
                 {!!this.lastError && (
@@ -337,11 +329,7 @@ export class MyComponent {
                   </div>
                 )}
 
-                <button
-                  onClick={() => this.setupTFA()}
-                  class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-                  disabled={!this.phone}
-                >
+                <button onClick={() => this.setupTFA()} class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.phone}>
                   Setup phone
                 </button>
               </div>
@@ -353,16 +341,10 @@ export class MyComponent {
           <div class="tfa-verify">
             {!!(this.tfaType === TFAType.TFATypeApp) && (
               <div class="tfa-verify__title-wrapper">
-                <h2 class={this.provisioningURI ? "tfa-verify__title" : "tfa-verify__title_mb-40"}>
+                <h2 class={this.provisioningURI ? 'tfa-verify__title' : 'tfa-verify__title_mb-40'}>
                   {!!this.provisioningURI ? 'Please scan QR-code with the app' : 'Use GoogleAuth as 2fa'}
                 </h2>
-                {!!this.provisioningURI && (
-                  <img
-                    src={`data:image/png;base64, ${this.provisioningQR}`}
-                    alt={this.provisioningURI}
-                    class="tfa-verify__qr-code"
-                  />
-                )}
+                {!!this.provisioningURI && <img src={`data:image/png;base64, ${this.provisioningQR}`} alt={this.provisioningURI} class="tfa-verify__qr-code" />}
               </div>
             )}
             {!!(this.tfaType === TFAType.TFATypeSMS) && (
@@ -384,7 +366,7 @@ export class MyComponent {
               value={this.tfaCode}
               placeholder="Verify code"
               onInput={event => this.tfaCodeChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.tfaCode) && this.verifyTFA()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.tfaCode) && this.verifyTFA()}
             />
 
             {!!this.lastError && (
@@ -393,12 +375,7 @@ export class MyComponent {
               </div>
             )}
 
-            <button
-              type="button"
-              class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-              disabled={!this.tfaCode}
-              onClick={() => this.verifyTFA()}
-            >
+            <button type="button" class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.tfaCode} onClick={() => this.verifyTFA()}>
               Confirm
             </button>
           </div>
@@ -406,12 +383,8 @@ export class MyComponent {
       case 'password/forgot':
         return (
           <div class="forgot-password">
-            <h2 class="forgot-password__title">
-              Enter the email you gave when you registered
-            </h2>
-            <p class="forgot-password__subtitle">
-              We will send you a link to create a new password on email
-            </p>
+            <h2 class="forgot-password__title">Enter the email you gave when you registered</h2>
+            <p class="forgot-password__subtitle">We will send you a link to create a new password on email</p>
             <input
               type="email"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
@@ -419,7 +392,7 @@ export class MyComponent {
               value={this.email}
               placeholder="Username"
               onInput={event => this.emailChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.email) && this.restorePassword()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.email) && this.restorePassword()}
             />
 
             {!!this.lastError && (
@@ -428,12 +401,7 @@ export class MyComponent {
               </div>
             )}
 
-            <button
-              type="button"
-              class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-              disabled={!this.email}
-              onClick={() => this.restorePassword()}
-            >
+            <button type="button" class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.email} onClick={() => this.restorePassword()}>
               Send the link
             </button>
           </div>
@@ -441,12 +409,8 @@ export class MyComponent {
       case 'password/reset':
         return (
           <div class="reset-password">
-            <h2 class="reset-password__title">
-              Set up a new password to log in to the website
-            </h2>
-            <p class="reset-password__subtitle">
-              Memorize your code and do not give it to anyone.
-            </p>
+            <h2 class="reset-password__title">Set up a new password to log in to the website</h2>
+            <p class="reset-password__subtitle">Memorize your code and do not give it to anyone.</p>
             <input
               type="password"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
@@ -454,7 +418,7 @@ export class MyComponent {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
-              onKeyPress={(e) => !!(e.key === "Enter" && this.password) && this.setNewPassword()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.password) && this.setNewPassword()}
             />
 
             {!!this.lastError && (
@@ -463,12 +427,7 @@ export class MyComponent {
               </div>
             )}
 
-            <button
-              type="button"
-              class={`primary-button ${this.lastError && 'primary-button-mt-32'}`}
-              disabled={!this.password}
-              onClick={() => this.setNewPassword()}
-            >
+            <button type="button" class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.password} onClick={() => this.setNewPassword()}>
               Save password
             </button>
           </div>
