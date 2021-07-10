@@ -1,19 +1,35 @@
 .social-buttons {
   width: 100%;
-  border-top: 1px solid var(--gray-line);
   position: relative;
-  padding-top: 48px;
 
   &__text {
     font-size: 14px;
     line-height: 21px;
-    position: absolute;
-    top: 0;
-    left: 50%;
     color: #828282;
-    transform: translate(-50%, -55%);
     padding: 4px 8px;
-    background-color: var(--main-background);
+    margin-bottom: 39px;
+    text-align: center;
+    position: static;
+
+    &::before {
+      content: '';
+      position: absolute;
+      height: 1px;
+      width: 36%;
+      left: 0;
+      top: 14px;
+      background-color: var(--gray-line);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      height: 1px;
+      width: 36%;
+      right: 0;
+      top: 14px;
+      background-color: var(--gray-line);
+    }
   }
 
   &__social-medias {
@@ -38,11 +54,21 @@
   }
 
   @include for-phone-only {
-    padding-top: 36px;
-
     &__media {
       width: 44px;
       height: 44px;
+    }
+
+    &__text {
+      margin-bottom: 36px;
+      
+      &::before {
+        width: 26%;
+      }
+  
+      &::after {
+        width: 26%;
+      }
     }
 
     &__image {

@@ -12,6 +12,11 @@
   color: var(--text);
   padding: 23px 24px;
 
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0; 
+  }
+
   &::placeholder {
     font-size: 18px;
     line-height: 26px;

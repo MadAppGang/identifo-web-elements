@@ -1,11 +1,14 @@
 .tfa-verify {
-  padding: 48px 24px 52px;
-  width: 100%;
-  max-width: 416px;
+  padding: 48px 0 52px;
+  width: 416px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  .error {
+    margin-top: 12px;
+  }
 
   &__title-wrapper {
     width: 100%;
@@ -24,6 +27,11 @@
     margin-bottom: 16px;
   }
 
+  &__title_mb-40 {
+    @extend .tfa-verify__title;
+    margin-bottom: 40px;
+  }
+
   &__app-button {
     font-size: 18px;
     line-height: 26px;
@@ -33,12 +41,12 @@
     margin-bottom: 40px;
   }
 
-  .form-control {
-    margin-bottom: 48px;
+  .primary-button {
+    margin-top: 48px;
   }
 
-  .primary-button {
-    margin-bottom: 36px;
+  .primary-button-mt-32 {
+    margin-top: 32px;
   }
 
   &__back {
@@ -56,12 +64,23 @@
     text-align: center;
   }
 
-  @include for-phone-only {
-    padding-top: 102px;
-    padding-bottom: 41px;
+  &__qr-code {
+    width: 160px;
+    height: 160px;
+    margin-bottom: 64px;
+  }
 
-    .form-control {
-      margin-bottom: 32px;
+  @include for-phone-only {
+    padding: 102px 24px 41px;
+    width: 100%;
+    max-width: 416px;
+
+    .primary-button {
+      margin-top: 32px;
+    }
+
+    &__qr-code {
+      margin-bottom: 48px;
     }
   }
 }
