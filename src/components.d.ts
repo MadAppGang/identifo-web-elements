@@ -27,8 +27,8 @@ declare global {
 declare namespace LocalJSX {
     interface IdentifoForm {
         "appId"?: string;
+        "onError"?: (event: CustomEvent<ApiError>) => void;
         "onLoginComplete"?: (event: CustomEvent<string>) => void;
-        "onOnError"?: (event: CustomEvent<ApiError>) => void;
         "theme"?: 'dark' | 'light';
         "url"?: string;
     }
