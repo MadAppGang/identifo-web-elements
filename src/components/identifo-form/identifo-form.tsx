@@ -10,15 +10,13 @@ type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/rese
   shadow: true,
 })
 export class MyComponent {
-  /**
-   * The first name
-   */
-  @State() auth: IdentifoAuth;
-  @State() route: Routes = 'login';
-
+  @Prop() route: Routes = 'login';
+  @Prop() token: string = '';
   @Prop() appId: string;
   @Prop() url: string;
   @Prop() theme: 'dark' | 'light';
+
+  @State() auth: IdentifoAuth;
 
   @State() username: string;
   @State() password: string;
@@ -31,10 +29,9 @@ export class MyComponent {
   @State() tfaMandatory: boolean;
   @State() provisioningURI: string;
   @State() provisioningQR: string;
-  @State() token: string;
   @State() success: boolean;
 
-  @Event() loginComplete: EventEmitter<string>;
+  @Event() complete: EventEmitter<string>;
   @Event() error: EventEmitter<ApiError>;
 
   // /**
@@ -69,14 +66,10 @@ export class MyComponent {
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
   }
-  async finishLogin() {
-    const token = this.auth.getToken().token;
-    this.loginComplete.emit(token);
-  }
   async verifyTFA() {
     this.auth.api
       .verifyTFA(this.tfaCode, [])
-      .then(() => this.finishLogin().then(() => this.openRoute('callback')))
+      .then(() => this.openRoute('callback'))
       .catch(e => this.processError(e));
   }
   async setupTFA() {
@@ -116,6 +109,9 @@ export class MyComponent {
       .catch(e => this.processError(e));
   }
   setNewPassword() {
+    if (this.token) {
+      this.auth.tokenService.saveToken(this.token, 'access');
+    }
     this.auth.api
       .resetPassword(this.password)
       .then(() => {
@@ -452,6 +448,12 @@ export class MyComponent {
     } catch (err) {
       this.route = 'error';
       this.lastError = err as ApiError;
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.route === 'callback') {
+      this.complete.emit(this.auth.getToken().token);
     }
   }
 
