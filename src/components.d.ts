@@ -9,7 +9,9 @@ import { ApiError } from "@identifo/identifo-auth-js";
 export namespace Components {
     interface IdentifoForm {
         "appId": string;
+        "route": Routes;
         "theme": 'dark' | 'light';
+        "token": string;
         "url": string;
     }
 }
@@ -27,9 +29,11 @@ declare global {
 declare namespace LocalJSX {
     interface IdentifoForm {
         "appId"?: string;
+        "onComplete"?: (event: CustomEvent<string>) => void;
         "onError"?: (event: CustomEvent<ApiError>) => void;
-        "onLoginComplete"?: (event: CustomEvent<string>) => void;
+        "route"?: Routes;
         "theme"?: 'dark' | 'light';
+        "token"?: string;
         "url"?: string;
     }
     interface IntrinsicElements {
