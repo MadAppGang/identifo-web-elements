@@ -22,6 +22,7 @@
     "generate": "stencil generate"
   },
   "dependencies": {
+    "@identifo/identifo-auth-js": "git+https://github.com/madappgang/identifo.js.git",
     "@stencil/core": "^2.0.1"
   },
   "license": "MIT",
