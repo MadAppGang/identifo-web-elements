@@ -2,7 +2,9 @@ import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
 import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
 import { afterLoginRedirect, loginCatchRedirect } from '../../utils/redirects';
 
-type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error';
+export type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error' | 'password/forgot/success';
+
+const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 @Component({
   tag: 'identifo-form',
@@ -10,8 +12,8 @@ type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/rese
   shadow: true,
 })
 export class MyComponent {
-  @Prop() route: Routes = 'login';
-  @Prop() token: string = '';
+  @Prop() route: Routes;
+  @Prop() token: string;
   @Prop() appId: string;
   @Prop() url: string;
   @Prop() theme: 'dark' | 'light';
@@ -59,9 +61,16 @@ export class MyComponent {
       .catch(e => this.processError(e));
   }
   async signUp() {
+    if (!this.validateEmail(this.username)) {
+      return
+    }
     await this.auth.api
       .register(this.username, this.password)
-      .then(e => afterLoginRedirect(e))
+      .then(e => {
+        this.phone = e.user.phone || '';
+        this.email = e.user.email || '';
+        return afterLoginRedirect(e)
+      })
       .catch(loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
@@ -78,14 +87,7 @@ export class MyComponent {
         await this.auth.api.updateUser({ new_phone: this.phone });
       } catch (e) {
         this.processError(e);
-      }
-    }
-
-    if (this.tfaType == TFAType.TFATypeEmail) {
-      try {
-        await this.auth.api.updateUser({ new_email: this.email });
-      } catch (e) {
-        this.processError(e);
+        return
       }
     }
 
@@ -105,6 +107,7 @@ export class MyComponent {
       .requestResetPassword(this.email)
       .then(() => {
         this.success = true;
+        this.openRoute('password/forgot/success')
       })
       .catch(e => this.processError(e));
   }
@@ -116,6 +119,7 @@ export class MyComponent {
       .resetPassword(this.password)
       .then(() => {
         this.success = true;
+        this.openRoute('login')
       })
       .catch(e => this.processError(e));
   }
@@ -138,6 +142,13 @@ export class MyComponent {
   tfaCodeChange(event: InputEvent) {
     this.tfaCode = (event.target as HTMLInputElement).value;
   }
+  validateEmail(email: string) {
+    if (!emailRegex.test(email)) {
+      this.processError({ detailedMessage: 'Email address is not valid', name: 'Validation error', message: 'Email address is not valid' })
+      return false
+    }
+    return true
+  }
   renderRoute(route: Routes) {
     switch (route) {
       case 'login':
@@ -155,7 +166,7 @@ export class MyComponent {
               class={`form-control ${this.lastError && 'form-control-danger'}`}
               id="floatingInput"
               value={this.username}
-              placeholder="Username"
+              placeholder="Email"
               onInput={event => this.usernameChange(event as InputEvent)}
               onKeyPress={e => !!(e.key === 'Enter' && this.username && this.password) && this.signIn()}
             />
@@ -207,7 +218,7 @@ export class MyComponent {
               class={`form-control ${this.lastError && 'form-control-danger'}`}
               id="floatingInput"
               value={this.username}
-              placeholder="Username"
+              placeholder="Email"
               onInput={event => this.usernameChange(event as InputEvent)}
               onKeyPress={e => !!(e.key === 'Enter' && this.password && this.username) && this.signUp()}
             />
@@ -283,27 +294,15 @@ export class MyComponent {
               </div>
             )}
             {this.tfaType === TFAType.TFATypeEmail && (
-              <div class="tfa-setup__form">
-                <p class="tfa-setup__subtitle"> Use email as 2fa, please check your email bellow, we will send confirmation code to this email</p>
-                <input
-                  type="text"
-                  class={`form-control ${this.lastError && 'form-control-danger'}`}
-                  id="floatingEmail"
-                  value={this.email}
-                  placeholder="Email"
-                  onInput={event => this.emailChange(event as InputEvent)}
-                  onKeyPress={e => !!(e.key === 'Enter' && this.email) && this.setupTFA()}
-                />
-
-                {!!this.lastError && (
-                  <div class="error" role="alert">
-                    {this.lastError?.detailedMessage}
-                  </div>
-                )}
-
-                <button onClick={() => this.setupTFA()} class={`primary-button ${this.lastError && 'primary-button-mt-32'}`} disabled={!this.email}>
-                  Setup email
-                </button>
+              <div class="info-card">
+                <div class="info-card__controls">
+                  <p class="info-card__title">Email</p>
+                  <button type="button" class="info-card__button" onClick={() => this.setupTFA()}>
+                    Setup
+                  </button>
+                </div>
+                <p class="info-card__subtitle">{this.email}</p>
+                <p class="info-card__text"> Use email as 2fa, please check your email, we will send confirmation code to this email.</p>
               </div>
             )}
             {this.tfaType === TFAType.TFATypeSMS && (
@@ -402,6 +401,14 @@ export class MyComponent {
             </button>
           </div>
         );
+      case 'password/forgot/success':
+        return (
+          <div class="forgot-password-success">
+            {this.theme === 'dark' && <img src="../../assets/images/email-dark.svg" alt="email" class="forgot-password-success__image" />}
+            {this.theme === 'light' && <img src="../../assets/images/email.svg" alt="email" class="forgot-password-success__image" />}
+            <p class="forgot-password-success__text">We sent you an email with a link to create a new password</p>
+          </div>
+        )
       case 'password/reset':
         return (
           <div class="reset-password">

@@ -1,6 +1,6 @@
 .tfa-setup {
   padding: 48px 0 80px;
-  width: 416px;
+  width: var(--content-width);
 
   display: flex;
   flex-direction: column;
@@ -47,7 +47,7 @@
 
   @include for-phone-only {
     width: 100%;
-    max-width: 416px;
+    max-width: var(--content-width);
     padding: 38px 24px 36px;
   }
 }

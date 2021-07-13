@@ -1,6 +1,6 @@
 .error-view {
   width: 100%;
-  max-width: 416px;
+  max-width: var(--content-width);
   padding: 0 24px;
   display: flex;
   flex-direction: column;

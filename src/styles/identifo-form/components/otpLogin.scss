@@ -6,7 +6,7 @@
   padding: 44px 24px 102px;
 
   width: 100%;
-  max-width: 416px;
+  max-width: var(--content-width);
 
   &__register-text {
     margin-bottom: 32px;
