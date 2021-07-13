@@ -1,5 +1,5 @@
 .register-form {
-  width: 416px;
+  width: var(--content-width);
   padding: 64px 0 44px;
 
   .form-control:not(:last-of-type) {
@@ -34,7 +34,7 @@
 
   @include for-phone-only {
     width: 100%;
-    max-width: 416px;
+    max-width: var(--content-width);
     padding: 48px 24px 32px;
 
     .form-control {

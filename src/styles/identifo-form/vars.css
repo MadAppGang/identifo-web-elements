@@ -1,3 +1,7 @@
+.wrapper, .wrapper-dark {
+  --content-width: 416px;
+}
+
 .wrapper {
   --main-background: #f7f7f7;
   --blue-text: #6163f6;
@@ -6,6 +10,7 @@
   --social-button: #1b1b1b;
   --text: #1b1b1b;
   --upload-photo: #e0e0e0;
+  --content-width: 416px;
 }
 
 .wrapper-dark {
@@ -16,4 +21,5 @@
   --social-button: #423f3f;
   --text: #fff;
   --upload-photo: #423f3f;
+  --content-width: 416px;
 }

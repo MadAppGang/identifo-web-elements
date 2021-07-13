@@ -5,6 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { Routes } from "./components/identifo-form/identifo-form";
 import { ApiError } from "@identifo/identifo-auth-js";
 export namespace Components {
     interface IdentifoForm {

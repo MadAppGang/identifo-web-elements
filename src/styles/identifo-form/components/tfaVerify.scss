@@ -1,6 +1,6 @@
 .tfa-verify {
   padding: 48px 0 52px;
-  width: 416px;
+  width: var(--content-width);
 
   display: flex;
   flex-direction: column;
@@ -73,7 +73,7 @@
   @include for-phone-only {
     padding: 102px 24px 41px;
     width: 100%;
-    max-width: 416px;
+    max-width: var(--content-width);
 
     .primary-button {
       margin-top: 32px;
