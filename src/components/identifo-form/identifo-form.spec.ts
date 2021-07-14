@@ -1,36 +1,36 @@
 import { newSpecPage } from '@stencil/core/testing';
-import { MyComponent } from './identifo-form';
+import { IdentifoForm } from './identifo-form';
 
-describe('my-component', () => {
+describe('identifo-form', () => {
   it('renders', async () => {
     const { root } = await newSpecPage({
-      components: [MyComponent],
-      html: '<my-component></my-component>',
+      components: [IdentifoForm],
+      html: '<identifo-form></identifo-form>',
     });
     expect(root).toEqualHtml(`
-      <my-component>
+      <identifo-form>
         <mock:shadow-root>
           <div>
             Hello, World! I'm
           </div>
         </mock:shadow-root>
-      </my-component>
+      </identifo-form>
     `);
   });
 
   it('renders with values', async () => {
     const { root } = await newSpecPage({
-      components: [MyComponent],
-      html: `<my-component first="Stencil" last="'Don't call me a framework' JS"></my-component>`,
+      components: [IdentifoForm],
+      html: `<identifo-form first="Stencil" last="'Don't call me a framework' JS"></identifo-form>`,
     });
     expect(root).toEqualHtml(`
-      <my-component first="Stencil" last="'Don't call me a framework' JS">
+      <identifo-form first="Stencil" last="'Don't call me a framework' JS">
         <mock:shadow-root>
           <div>
             Hello, World! I'm Stencil 'Don't call me a framework' JS
           </div>
         </mock:shadow-root>
-      </my-component>
+      </identifo-form>
     `);
   });
 });

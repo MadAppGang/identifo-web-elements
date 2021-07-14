@@ -1,15 +1,15 @@
 {
-  "name": "identifo-webcomp",
+  "name": "identifo-web-element",
   "version": "0.0.1",
-  "description": "Stencil Component Starter",
+  "description": "Identifo auth element",
   "main": "dist/index.cjs.js",
   "module": "dist/custom-elements/index.js",
-  "es2015": "dist/esm/index.mjs",
+  "es2015": "dist/esm-es5/index.mjs",
   "es2017": "dist/esm/index.mjs",
   "types": "dist/custom-elements/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/identifo-webcomp/identifo-webcomp.esm.js",
+  "unpkg": "dist/identifo-web-element/identifo-web-element.esm.js",
   "files": [
     "dist/",
     "loader/"

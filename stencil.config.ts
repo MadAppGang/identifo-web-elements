@@ -2,7 +2,10 @@ import { Config } from '@stencil/core';
 import { sass } from '@stencil/sass';
 
 export const config: Config = {
-  namespace: 'identifo-webcomp',
+  namespace: 'identifo',
+  buildEs5: true,
+  hashFileNames: false,
+  bundles: [{ components: ['identifo-form'] }],
   outputTargets: [
     {
       type: 'dist',
@@ -19,5 +22,5 @@ export const config: Config = {
       serviceWorker: null, // disable service workers
     },
   ],
-  plugins: [sass()]
+  plugins: [sass()],
 };

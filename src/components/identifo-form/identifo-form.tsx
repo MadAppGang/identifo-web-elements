@@ -1,5 +1,5 @@
 import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
-import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
+import { Component, Event, EventEmitter, getAssetPath, h, Prop, State } from '@stencil/core';
 import { afterLoginRedirect, loginCatchRedirect } from '../../utils/redirects';
 
 export type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error' | 'password/forgot/success';
@@ -9,9 +9,10 @@ const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\
 @Component({
   tag: 'identifo-form',
   styleUrl: '../../styles/identifo-form/main.scss',
+  assetsDirs: ['assets'],
   shadow: true,
 })
-export class MyComponent {
+export class IdentifoForm {
   @Prop() route: Routes;
   @Prop() token: string;
   @Prop() appId: string;
@@ -62,14 +63,14 @@ export class MyComponent {
   }
   async signUp() {
     if (!this.validateEmail(this.username)) {
-      return
+      return;
     }
     await this.auth.api
       .register(this.username, this.password)
       .then(e => {
         this.phone = e.user.phone || '';
         this.email = e.user.email || '';
-        return afterLoginRedirect(e)
+        return afterLoginRedirect(e);
       })
       .catch(loginCatchRedirect)
       .then(route => this.openRoute(route))
@@ -87,7 +88,7 @@ export class MyComponent {
         await this.auth.api.updateUser({ new_phone: this.phone });
       } catch (e) {
         this.processError(e);
-        return
+        return;
       }
     }
 
@@ -107,7 +108,7 @@ export class MyComponent {
       .requestResetPassword(this.email)
       .then(() => {
         this.success = true;
-        this.openRoute('password/forgot/success')
+        this.openRoute('password/forgot/success');
       })
       .catch(e => this.processError(e));
   }
@@ -119,7 +120,7 @@ export class MyComponent {
       .resetPassword(this.password)
       .then(() => {
         this.success = true;
-        this.openRoute('login')
+        this.openRoute('login');
       })
       .catch(e => this.processError(e));
   }
@@ -144,10 +145,10 @@ export class MyComponent {
   }
   validateEmail(email: string) {
     if (!emailRegex.test(email)) {
-      this.processError({ detailedMessage: 'Email address is not valid', name: 'Validation error', message: 'Email address is not valid' })
-      return false
+      this.processError({ detailedMessage: 'Email address is not valid', name: 'Validation error', message: 'Email address is not valid' });
+      return false;
     }
-    return true
+    return true;
   }
   renderRoute(route: Routes) {
     switch (route) {
@@ -198,13 +199,13 @@ export class MyComponent {
               <p class="social-buttons__text">or continue with</p>
               <div class="social-buttons__social-medias">
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/apple.svg" class="social-buttons__image" alt="login via apple" />
+                  <img src={getAssetPath(`assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/google.svg" class="social-buttons__image" alt="login via google" />
+                  <img src={getAssetPath(`assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/fb.svg" class="social-buttons__image" alt="login via facebook" />
+                  <img src={getAssetPath(`assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
                 </div>
               </div>
             </div>
@@ -266,13 +267,13 @@ export class MyComponent {
               <p class="social-buttons__text">or continue with</p>
               <div class="social-buttons__social-medias">
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/apple.svg" class="social-buttons__image" alt="login via apple" />
+                  <img src={getAssetPath(`./assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/google.svg" class="social-buttons__image" alt="login via google" />
+                  <img src={getAssetPath(`./assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
                 </div>
                 <div class="social-buttons__media">
-                  <img src="../../assets/images/fb.svg" class="social-buttons__image" alt="login via facebook" />
+                  <img src={getAssetPath(`./assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
                 </div>
               </div>
             </div>
@@ -404,11 +405,11 @@ export class MyComponent {
       case 'password/forgot/success':
         return (
           <div class="forgot-password-success">
-            {this.theme === 'dark' && <img src="../../assets/images/email-dark.svg" alt="email" class="forgot-password-success__image" />}
-            {this.theme === 'light' && <img src="../../assets/images/email.svg" alt="email" class="forgot-password-success__image" />}
+            {this.theme === 'dark' && <img src={getAssetPath(`./assets/images/${'email-dark.svg'}`)} alt="email" class="forgot-password-success__image" />}
+            {this.theme === 'light' && <img src={getAssetPath(`./assets/images/${'email.svg'}`)} alt="email" class="forgot-password-success__image" />}
             <p class="forgot-password-success__text">We sent you an email with a link to create a new password</p>
           </div>
-        )
+        );
       case 'password/reset':
         return (
           <div class="reset-password">
