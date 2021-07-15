@@ -12,7 +12,7 @@ const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\
   shadow: true,
 })
 export class IdentifoForm {
-  @Prop() route: Routes;
+  @Prop({ mutable: true }) route: Routes;
   @Prop() token: string;
   @Prop() appId: string;
   @Prop() url: string;
@@ -25,8 +25,6 @@ export class IdentifoForm {
   @State() phone: string;
   @State() email: string;
   @State() registrationForbidden: boolean;
-  @State() lastError: ApiError;
-  @State() lastResponse: LoginResponse;
   @State() tfaCode: string;
   @State() tfaType: TFAType;
   @State() tfaMandatory: boolean;
@@ -34,7 +32,10 @@ export class IdentifoForm {
   @State() provisioningQR: string;
   @State() success: boolean;
 
-  @Event() complete: EventEmitter<string>;
+  @State() lastError: ApiError;
+  @State() lastResponse: LoginResponse;
+
+  @Event() complete: EventEmitter<LoginResponse>;
   @Event() error: EventEmitter<ApiError>;
 
   // /**
@@ -478,7 +479,7 @@ export class IdentifoForm {
 
   componentDidUpdate() {
     if (this.route === 'callback') {
-      this.complete.emit(this.auth.getToken().token);
+      this.complete.emit(this.lastResponse);
     }
   }
 

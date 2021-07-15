@@ -6,7 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { Routes } from "./components/identifo-form/identifo-form";
-import { ApiError } from "@identifo/identifo-auth-js";
+import { ApiError, LoginResponse } from "@identifo/identifo-auth-js";
 export namespace Components {
     interface IdentifoForm {
         "appId": string;
@@ -30,7 +30,7 @@ declare global {
 declare namespace LocalJSX {
     interface IdentifoForm {
         "appId"?: string;
-        "onComplete"?: (event: CustomEvent<string>) => void;
+        "onComplete"?: (event: CustomEvent<LoginResponse>) => void;
         "onError"?: (event: CustomEvent<ApiError>) => void;
         "route"?: Routes;
         "theme"?: 'dark' | 'light';
