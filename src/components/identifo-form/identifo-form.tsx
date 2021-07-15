@@ -23,10 +23,10 @@ const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\
   shadow: true,
 })
 export class IdentifoForm {
-  @Prop({ mutable: true }) route: Routes;
+  @Prop({ mutable: true, reflect: true }) route: Routes;
   @Prop() token: string;
-  @Prop() appId: string;
-  @Prop() url: string;
+  @Prop({ reflect: true }) appId: string;
+  @Prop({ reflect: true }) url: string;
   @Prop() theme: 'dark' | 'light';
 
   @State() auth: IdentifoAuth;
