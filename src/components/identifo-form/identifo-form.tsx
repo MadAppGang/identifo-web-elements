@@ -1,6 +1,5 @@
-import { ApiError, IdentifoAuth, TFAType } from '@identifo/identifo-auth-js';
+import { ApiError, APIErrorCodes, IdentifoAuth, LoginResponse, TFAType } from '@identifo/identifo-auth-js';
 import { Component, Event, EventEmitter, getAssetPath, h, Prop, State } from '@stencil/core';
-import { afterLoginRedirect, loginCatchRedirect } from '../../utils/redirects';
 
 export type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error' | 'password/forgot/success';
 
@@ -27,6 +26,7 @@ export class IdentifoForm {
   @State() email: string;
   @State() registrationForbidden: boolean;
   @State() lastError: ApiError;
+  @State() lastResponse: LoginResponse;
   @State() tfaCode: string;
   @State() tfaType: TFAType;
   @State() tfaMandatory: boolean;
@@ -49,15 +49,36 @@ export class IdentifoForm {
     this.lastError = e;
     this.error.emit(e);
   }
+  afterLoginRedirect = (e: LoginResponse) => {
+    this.phone = e.user.phone || '';
+    this.email = e.user.email || '';
+    this.lastResponse = e;
+    if (e.require_2fa) {
+      if (!e.enabled_2fa) {
+        return 'tfa/setup';
+      }
+      if (e.enabled_2fa) {
+        return 'tfa/verify';
+      }
+    }
+    if (e.access_token && e.refresh_token) {
+      return 'callback';
+    }
+    if (e.access_token && !e.refresh_token) {
+      return 'callback';
+    }
+  };
+  loginCatchRedirect = (data: ApiError): 'tfa/setup' => {
+    if (data.id === APIErrorCodes.PleaseEnableTFA) {
+      return 'tfa/setup';
+    }
+    throw data;
+  };
   async signIn() {
     await this.auth.api
       .login(this.username, this.password, '', [''])
-      .then(e => {
-        this.phone = e.user.phone || '';
-        this.email = e.user.email || '';
-        return afterLoginRedirect(e);
-      })
-      .catch(loginCatchRedirect)
+      .then(this.afterLoginRedirect)
+      .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
   }
@@ -67,12 +88,8 @@ export class IdentifoForm {
     }
     await this.auth.api
       .register(this.username, this.password)
-      .then(e => {
-        this.phone = e.user.phone || '';
-        this.email = e.user.email || '';
-        return afterLoginRedirect(e);
-      })
-      .catch(loginCatchRedirect)
+      .then(this.afterLoginRedirect)
+      .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
   }
