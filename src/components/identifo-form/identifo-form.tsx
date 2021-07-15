@@ -1,7 +1,18 @@
 import { ApiError, APIErrorCodes, IdentifoAuth, LoginResponse, TFAType } from '@identifo/identifo-auth-js';
 import { Component, Event, EventEmitter, getAssetPath, h, Prop, State } from '@stencil/core';
 
-export type Routes = 'login' | 'register' | 'tfa/verify' | 'tfa/setup' | 'password/reset' | 'password/forgot' | 'callback' | 'otp/login' | 'error' | 'password/forgot/success';
+export type Routes =
+  | 'login'
+  | 'register'
+  | 'tfa/verify'
+  | 'tfa/setup'
+  | 'password/reset'
+  | 'password/forgot'
+  | 'callback'
+  | 'otp/login'
+  | 'error'
+  | 'password/forgot/success'
+  | 'logout';
 
 const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -480,6 +491,9 @@ export class IdentifoForm {
   componentDidUpdate() {
     if (this.route === 'callback') {
       this.complete.emit(this.lastResponse);
+    }
+    if (this.route === 'logout') {
+      this.auth.api.logout().then(() => this.complete.emit());
     }
   }
 
