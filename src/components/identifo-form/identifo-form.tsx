@@ -150,6 +150,7 @@ export class IdentifoForm {
       .then(() => {
         this.success = true;
         this.openRoute('login');
+        this.password = ''
       })
       .catch(e => this.processError(e));
   }
@@ -415,7 +416,7 @@ export class IdentifoForm {
               class={`form-control ${this.lastError && 'form-control-danger'}`}
               id="floatingEmail"
               value={this.email}
-              placeholder="Username"
+              placeholder="Email"
               onInput={event => this.emailChange(event as InputEvent)}
               onKeyPress={e => !!(e.key === 'Enter' && this.email) && this.restorePassword()}
             />
@@ -443,7 +444,7 @@ export class IdentifoForm {
         return (
           <div class="reset-password">
             <h2 class="reset-password__title">Set up a new password to log in to the website</h2>
-            <p class="reset-password__subtitle">Memorize your code and do not give it to anyone.</p>
+            <p class="reset-password__subtitle">Memorize your password and do not give it to anyone.</p>
             <input
               type="password"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
