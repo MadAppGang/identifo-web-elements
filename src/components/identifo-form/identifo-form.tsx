@@ -488,7 +488,7 @@ export class IdentifoForm {
     }
   }
 
-  componentDidUpdate() {
+  componentWillRender() {
     if (this.route === 'callback') {
       this.complete.emit(this.lastResponse);
     }
