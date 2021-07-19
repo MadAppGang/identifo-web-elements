@@ -28,6 +28,7 @@ export class IdentifoForm {
   @Prop({ reflect: true }) appId: string;
   @Prop({ reflect: true }) url: string;
   @Prop() theme: 'dark' | 'light';
+  @Prop() scopes: string;
 
   @State() auth: IdentifoAuth;
 
@@ -88,7 +89,7 @@ export class IdentifoForm {
   };
   async signIn() {
     await this.auth.api
-      .login(this.email, this.password, '', [''])
+      .login(this.email, this.password, '', this.scopes.split(','))
       .then(this.afterLoginRedirect)
       .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
@@ -99,7 +100,7 @@ export class IdentifoForm {
       return;
     }
     await this.auth.api
-      .register(this.email, this.password)
+      .register(this.email, this.password, this.scopes.split(','))
       .then(this.afterLoginRedirect)
       .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
