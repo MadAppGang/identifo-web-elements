@@ -11,6 +11,7 @@ export namespace Components {
     interface IdentifoForm {
         "appId": string;
         "route": Routes;
+        "scopes": string;
         "theme": 'dark' | 'light';
         "token": string;
         "url": string;
@@ -33,6 +34,7 @@ declare namespace LocalJSX {
         "onComplete"?: (event: CustomEvent<LoginResponse>) => void;
         "onError"?: (event: CustomEvent<ApiError>) => void;
         "route"?: Routes;
+        "scopes"?: string;
         "theme"?: 'dark' | 'light';
         "token"?: string;
         "url"?: string;
