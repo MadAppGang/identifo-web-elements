@@ -88,18 +88,18 @@ export class IdentifoForm {
   };
   async signIn() {
     await this.auth.api
-      .login(this.username, this.password, '', [''])
+      .login(this.email, this.password, '', [''])
       .then(this.afterLoginRedirect)
       .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
   }
   async signUp() {
-    if (!this.validateEmail(this.username)) {
+    if (!this.validateEmail(this.email)) {
       return;
     }
     await this.auth.api
-      .register(this.username, this.password)
+      .register(this.email, this.password)
       .then(this.afterLoginRedirect)
       .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
@@ -150,7 +150,7 @@ export class IdentifoForm {
       .then(() => {
         this.success = true;
         this.openRoute('login');
-        this.password = ''
+        this.password = '';
       })
       .catch(e => this.processError(e));
   }
@@ -196,10 +196,10 @@ export class IdentifoForm {
               type="text"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
               id="floatingInput"
-              value={this.username}
+              value={this.email}
               placeholder="Email"
-              onInput={event => this.usernameChange(event as InputEvent)}
-              onKeyPress={e => !!(e.key === 'Enter' && this.username && this.password) && this.signIn()}
+              onInput={event => this.emailChange(event as InputEvent)}
+              onKeyPress={e => !!(e.key === 'Enter' && this.email && this.password) && this.signIn()}
             />
             <input
               type="password"
@@ -208,7 +208,7 @@ export class IdentifoForm {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
-              onKeyPress={e => !!(e.key === 'Enter' && this.username && this.password) && this.signIn()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.email && this.password) && this.signIn()}
             />
 
             {!!this.lastError && (
@@ -218,7 +218,7 @@ export class IdentifoForm {
             )}
 
             <div class={`login-form__buttons ${!!this.lastError ? 'login-form__buttons_mt-32' : ''}`}>
-              <button onClick={() => this.signIn()} class="primary-button" disabled={!this.username || !this.password}>
+              <button onClick={() => this.signIn()} class="primary-button" disabled={!this.email || !this.password}>
                 Login
               </button>
               <a onClick={() => this.openRoute('password/forgot')} class="login-form__forgot-pass">
@@ -248,10 +248,10 @@ export class IdentifoForm {
               type="text"
               class={`form-control ${this.lastError && 'form-control-danger'}`}
               id="floatingInput"
-              value={this.username}
+              value={this.email}
               placeholder="Email"
-              onInput={event => this.usernameChange(event as InputEvent)}
-              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.username) && this.signUp()}
+              onInput={event => this.emailChange(event as InputEvent)}
+              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.email) && this.signUp()}
             />
             <input
               type="password"
@@ -260,7 +260,7 @@ export class IdentifoForm {
               value={this.password}
               placeholder="Password"
               onInput={event => this.passwordChange(event as InputEvent)}
-              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.username) && this.signUp()}
+              onKeyPress={e => !!(e.key === 'Enter' && this.password && this.email) && this.signUp()}
             />
 
             {!!this.lastError && (
@@ -270,7 +270,7 @@ export class IdentifoForm {
             )}
 
             <div class={`register-form__buttons ${!!this.lastError ? 'register-form__buttons_mt-32' : ''}`}>
-              <button onClick={() => this.signUp()} class="primary-button" disabled={!this.username || !this.password}>
+              <button onClick={() => this.signUp()} class="primary-button" disabled={!this.email || !this.password}>
                 Continue
               </button>
               <a onClick={() => this.openRoute('login')} class="register-form__log-in">
