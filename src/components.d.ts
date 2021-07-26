@@ -10,6 +10,9 @@ import { ApiError, LoginResponse } from "@identifo/identifo-auth-js";
 export namespace Components {
     interface IdentifoForm {
         "appId": string;
+        "callbackUrl": string;
+        "debug": boolean;
+        "federatedRedirectUrl": string;
         "route": Routes;
         "scopes": string;
         "theme": 'dark' | 'light';
@@ -31,6 +34,9 @@ declare global {
 declare namespace LocalJSX {
     interface IdentifoForm {
         "appId"?: string;
+        "callbackUrl"?: string;
+        "debug"?: boolean;
+        "federatedRedirectUrl"?: string;
         "onComplete"?: (event: CustomEvent<LoginResponse>) => void;
         "onError"?: (event: CustomEvent<ApiError>) => void;
         "route"?: Routes;

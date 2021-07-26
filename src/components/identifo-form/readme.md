@@ -7,14 +7,17 @@
 
 ## Properties
 
-| Property | Attribute | Description | Type                                                                                                                                                                             | Default     |
-| -------- | --------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `appId`  | `app-id`  |             | `string`                                                                                                                                                                         | `undefined` |
-| `route`  | `route`   |             | `"callback" \| "error" \| "login" \| "logout" \| "otp/login" \| "password/forgot" \| "password/forgot/success" \| "password/reset" \| "register" \| "tfa/setup" \| "tfa/verify"` | `undefined` |
-| `scopes` | `scopes`  |             | `string`                                                                                                                                                                         | `undefined` |
-| `theme`  | `theme`   |             | `"dark" \| "light"`                                                                                                                                                              | `undefined` |
-| `token`  | `token`   |             | `string`                                                                                                                                                                         | `undefined` |
-| `url`    | `url`     |             | `string`                                                                                                                                                                         | `undefined` |
+| Property               | Attribute                | Description | Type                                                                                                                                                                                          | Default     |
+| ---------------------- | ------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `appId`                | `app-id`                 |             | `string`                                                                                                                                                                                      | `undefined` |
+| `callbackUrl`          | `callback-url`           |             | `string`                                                                                                                                                                                      | `undefined` |
+| `debug`                | `debug`                  |             | `boolean`                                                                                                                                                                                     | `undefined` |
+| `federatedRedirectUrl` | `federated-redirect-url` |             | `string`                                                                                                                                                                                      | `undefined` |
+| `route`                | `route`                  |             | `"callback" \| "error" \| "loading" \| "login" \| "logout" \| "otp/login" \| "password/forgot" \| "password/forgot/success" \| "password/reset" \| "register" \| "tfa/setup" \| "tfa/verify"` | `undefined` |
+| `scopes`               | `scopes`                 |             | `string`                                                                                                                                                                                      | `undefined` |
+| `theme`                | `theme`                  |             | `"dark" \| "light"`                                                                                                                                                                           | `undefined` |
+| `token`                | `token`                  |             | `string`                                                                                                                                                                                      | `undefined` |
+| `url`                  | `url`                    |             | `string`                                                                                                                                                                                      | `undefined` |
 
 
 ## Events

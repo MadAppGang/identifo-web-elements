@@ -1,5 +1,5 @@
-import { ApiError, APIErrorCodes, IdentifoAuth, LoginResponse, TFAType } from '@identifo/identifo-auth-js';
-import { Component, Event, EventEmitter, getAssetPath, h, Prop, State } from '@stencil/core';
+import { ApiError, APIErrorCodes, IdentifoAuth, LoginResponse, TFAType, FederatedLoginProvider } from '@identifo/identifo-auth-js';
+import { Component, Event, EventEmitter, getAssetPath, h, Host, Prop, State } from '@stencil/core';
 
 export type Routes =
   | 'login'
@@ -12,7 +12,8 @@ export type Routes =
   | 'otp/login'
   | 'error'
   | 'password/forgot/success'
-  | 'logout';
+  | 'logout'
+  | 'loading';
 
 const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
@@ -29,6 +30,11 @@ export class IdentifoForm {
   @Prop({ reflect: true }) url: string;
   @Prop() theme: 'dark' | 'light';
   @Prop() scopes: string;
+  // This url will be preserved when federated login will be completed
+  @Prop() callbackUrl: string;
+  // Used for redirect on federated login flow
+  @Prop() federatedRedirectUrl: string;
+  @Prop() debug: boolean;
 
   @State() auth: IdentifoAuth;
 
@@ -39,6 +45,7 @@ export class IdentifoForm {
   @State() registrationForbidden: boolean;
   @State() tfaCode: string;
   @State() tfaType: TFAType;
+  @State() federatedProviders: string[];
   @State() tfaMandatory: boolean;
   @State() provisioningURI: string;
   @State() provisioningQR: string;
@@ -94,6 +101,10 @@ export class IdentifoForm {
       .catch(this.loginCatchRedirect)
       .then(route => this.openRoute(route))
       .catch(e => this.processError(e));
+  }
+  async loginWith(provider: FederatedLoginProvider) {
+    const federatedRedirectUrl = this.federatedRedirectUrl || window.location.origin + window.location.pathname;
+    await this.auth.api.federatedLogin(provider, this.scopes.split(','), federatedRedirectUrl, this.callbackUrl);
   }
   async signUp() {
     if (!this.validateEmail(this.email)) {
@@ -226,20 +237,28 @@ export class IdentifoForm {
                 Forgot password
               </a>
             </div>
-            <div class="social-buttons">
-              <p class="social-buttons__text">or continue with</p>
-              <div class="social-buttons__social-medias">
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
-                </div>
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
-                </div>
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
+            {this.federatedProviders.length > 0 && (
+              <div class="social-buttons">
+                <p class="social-buttons__text">or continue with</p>
+                <div class="social-buttons__social-medias">
+                  {this.federatedProviders.indexOf('apple') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('apple')}>
+                      <img src={getAssetPath(`assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
+                    </div>
+                  )}
+                  {this.federatedProviders.indexOf('google') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('google')}>
+                      <img src={getAssetPath(`assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
+                    </div>
+                  )}
+                  {this.federatedProviders.indexOf('facebook') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('facebook')}>
+                      <img src={getAssetPath(`assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         );
       case 'register':
@@ -294,20 +313,28 @@ export class IdentifoForm {
             <button onClick={() => this.openRoute('tfa/verify')} class="primary-button" disabled={!this.phone}>
               Continue
             </button>
-            <div class="social-buttons">
-              <p class="social-buttons__text">or continue with</p>
-              <div class="social-buttons__social-medias">
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`./assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
-                </div>
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`./assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
-                </div>
-                <div class="social-buttons__media">
-                  <img src={getAssetPath(`./assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
+            {this.federatedProviders.length > 0 && (
+              <div class="social-buttons">
+                <p class="social-buttons__text">or continue with</p>
+                <div class="social-buttons__social-medias">
+                  {this.federatedProviders.indexOf('apple') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('apple')}>
+                      <img src={getAssetPath(`assets/images/${'apple.svg'}`)} class="social-buttons__image" alt="login via apple" />
+                    </div>
+                  )}
+                  {this.federatedProviders.indexOf('google') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('google')}>
+                      <img src={getAssetPath(`assets/images/${'google.svg'}`)} class="social-buttons__image" alt="login via google" />
+                    </div>
+                  )}
+                  {this.federatedProviders.indexOf('facebook') > -1 && (
+                    <div class="social-buttons__media" onClick={() => this.loginWith('facebook')}>
+                      <img src={getAssetPath(`assets/images/${'fb.svg'}`)} class="social-buttons__image" alt="login via facebook" />
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         );
       case 'tfa/setup':
@@ -474,6 +501,25 @@ export class IdentifoForm {
             <div class="error-view__details">{this.lastError.detailedMessage}</div>
           </div>
         );
+      case 'callback':
+        return (
+          <div class="error-view">
+            <div>Success</div>
+            {this.debug && (
+              <div>
+                <div>Access token: {this.lastResponse.access_token}</div>
+                <div>Refresh token: {this.lastResponse.refresh_token}</div>
+                <div>User: {JSON.stringify(this.lastResponse.user)}</div>
+              </div>
+            )}
+          </div>
+        );
+      case 'loading':
+        return (
+          <div class="error-view">
+            <div>Loading ...</div>
+          </div>
+        );
     }
   }
 
@@ -484,15 +530,41 @@ export class IdentifoForm {
       const settings = await this.auth.api.getAppSettings();
       this.registrationForbidden = settings.registrationForbidden;
       this.tfaType = settings.tfaType;
+      this.federatedProviders = settings.federatedProviders;
     } catch (err) {
       this.route = 'error';
       this.lastError = err as ApiError;
+    }
+    // If we have provider and state then we need to complete federated login
+    const href = new URL(window.location.href);
+    if (!!href.searchParams.get('provider') && !!href.searchParams.get('state')) {
+      // Also we clear all url params after parsing
+      const u = new URL(window.location.href);
+      const sp = new URLSearchParams();
+      const appId = href.searchParams.get('appId');
+
+      sp.set('appId', appId);
+      window.history.replaceState({}, document.title, `${u.pathname}?${sp.toString()}`);
+      this.route = 'loading';
+      this.auth.api
+        .federatedLoginComplete(u.searchParams)
+        .then(this.afterLoginRedirect)
+        .catch(this.loginCatchRedirect)
+        .then(route => this.openRoute(route))
+        .catch(e => this.processError(e));
     }
   }
 
   componentWillRender() {
     if (this.route === 'callback') {
+      const u = new URL(window.location.href);
+      u.searchParams.set('callbackUrl', this.lastResponse.callbackUrl);
+      window.history.replaceState({}, document.title, `${u.pathname}?${u.searchParams.toString()}`);
+
       this.complete.emit(this.lastResponse);
+    }
+    if (this.route === 'logout') {
+      this.auth.api.logout().then(() => this.complete.emit());
     }
     if (this.route === 'logout') {
       this.auth.api.logout().then(() => this.complete.emit());
@@ -500,6 +572,18 @@ export class IdentifoForm {
   }
 
   render() {
-    return <div class={{ 'wrapper': this.theme === 'light', 'wrapper-dark': this.theme === 'dark' }}>{this.renderRoute(this.route)}</div>;
+    return (
+      <Host>
+        <div class={{ 'wrapper': this.theme === 'light', 'wrapper-dark': this.theme === 'dark' }}>{this.renderRoute(this.route)}</div>
+        <div class="error-view">
+          {this.debug && (
+            <div>
+              <br />
+              {this.appId}
+            </div>
+          )}
+        </div>
+      </Host>
+    );
   }
 }
